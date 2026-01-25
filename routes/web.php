@@ -15,3 +15,7 @@ Route::get('/db-check', function () {
         'actual' => DB::connection()->getDatabaseName(),
     ];
 });
+
+Route::get('/db-all', function () {
+    return config('database.connections');
+});
