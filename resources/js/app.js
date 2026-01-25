@@ -28,7 +28,7 @@ document.getElementById("editModal").addEventListener("show.bs.modal", () => {
 
 async function loadItems() {
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/items");
+        const response = await fetch("/api/items");
         const items = await response.json();
 
         const tbody = document.getElementById("items-table-body");
@@ -67,7 +67,7 @@ async function saveNewItem() {
     const name = document.getElementById("add-item-name").value.trim();
     const amount = document.getElementById("add-item-amount").value.trim();
 
-    const response = await fetch("http://127.0.0.1:8000/api/items", {
+    const response = await fetch("/api/items", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -103,7 +103,7 @@ async function saveEditedItem() {
     const name = document.getElementById("edit-item-name").value.trim();
     const amount = document.getElementById("edit-item-amount").value.trim();
 
-    const response = await fetch(`http://127.0.0.1:8000/api/items/${id}`, {
+    const response = await fetch(`/api/items/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -129,7 +129,7 @@ function deleteItem(id) {
 async function confirmDelete() {
     const id = document.getElementById("delete-item-id").value;
 
-    await fetch(`http://127.0.0.1:8000/api/items/${id}`, {
+    await fetch(`/api/items/${id}`, {
         method: "DELETE",
         headers: { "Accept": "application/json" }
     });
