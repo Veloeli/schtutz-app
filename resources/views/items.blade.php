@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>List Items</title>
+    <title>Items</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
@@ -15,6 +15,7 @@
     @vite(['resources/js/app.js'])
 </head>
 
+<h1 style="color:red">LOCAL TEST</h1>
 <div class="modal fade" id="addModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
