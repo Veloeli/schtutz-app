@@ -6,6 +6,10 @@ Route::get('/', function () {
     return view('items');
 });
 
+Route::get('/items', function () {
+    return view('items');
+});
+
 use Illuminate\Support\Facades\DB;
 
 Route::get('/db-check', function () {

@@ -25,22 +25,43 @@
 <body class="d-flex">
 
     <!-- Sidebar -->
-    <nav class="bg-dark text-white p-3" style="width: 260px; min-height: 100vh;">
-        <h4 class="mb-4">
-            <i class="bi bi-speedometer2"></i> Dashboard
-        </h4>
+    <div class="offcanvas-md offcanvas-start bg-dark text-white" 
+         tabindex="-1" 
+         id="sidebar" 
+         style="width: 260px;">
 
-        <ul class="nav flex-column gap-1">
-            <li class="nav-item">
-                <a href="/items" class="nav-link text-white">
-                    <i class="bi bi-box-seam"></i> Items
-                </a>
-            </li>
-        </ul>
-    </nav>
+        <div class="offcanvas-header d-md-none">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+
+        <div class="offcanvas-body p-3 d-md-block">
+
+            <h4 class="mb-4 d-none d-md-block">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </h4>
+
+            <ul class="nav flex-column gap-1">
+                <li class="nav-item">
+                    <a href="/items" class="nav-link text-white">
+                        <i class="bi bi-box-seam"></i> Items
+                    </a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
 
     <!-- Main content -->
     <main class="flex-grow-1 p-4">
+        <button 
+            class="btn btn-dark d-md-none mb-3" 
+            data-bs-toggle="offcanvas" 
+            data-bs-target="#sidebar"
+        >
+            <i class="bi bi-list"></i> Menu
+        </button>
+
         @yield('content')
     </main>
 
