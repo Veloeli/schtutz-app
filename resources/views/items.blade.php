@@ -1,21 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Items</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@extends('layouts.app')
 
-    <!-- Bootstrap CSS -->
-    <link 
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
-        rel="stylesheet"
-    >
+@section('content')
 
-    <!-- Load Laravel's JS bundle -->
-    @vite(['resources/js/app.js'])
-</head>
-
-<h1 style="color:red">LOCAL TEST</h1>
+<!-- Add Item Modal -->
 <div class="modal fade" id="addModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -45,6 +32,7 @@
   </div>
 </div>
 
+<!-- Edit Item Modal -->
 <div class="modal fade" id="editModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -75,6 +63,7 @@
   </div>
 </div>
 
+<!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-danger">
@@ -96,15 +85,19 @@
   </div>
 </div>
 
-<body class="bg-light">
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">
+        <i class="bi bi-box-seam"></i> Items
+    </h1>
 
-<div class="container py-5">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+        <i class="bi bi-plus-circle"></i> Add
+    </button>
+</div>
 
-    <h1 class="mb-4 text-center">Items</h1>
-
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Add</button>
-
-    <table class="table table-striped table-hover mt-3">
+<!-- Items Table -->
+<table class="table table-striped table-hover align-middle">
     <thead class="table-dark">
         <tr>
             <th style="width: 40%">Name</th>
@@ -112,15 +105,7 @@
             <th style="width: 40%" class="text-end">Actions</th>
         </tr>
     </thead>
-        <tbody id="items-table-body"></tbody>
-    </table>
+    <tbody id="items-table-body"></tbody>
+</table>
 
-</div>
-
-<!-- Bootstrap JS -->
-<script 
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
-</script>
-
-</body>
-</html>
+@endsection
