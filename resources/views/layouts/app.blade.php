@@ -43,8 +43,16 @@
 
             <ul class="nav flex-column gap-1">
                 <li class="nav-item">
-                    <a href="/items" class="nav-link text-white">
+                    <a href="{{ route('items.index') }}" 
+                       class="nav-link {{ request()->is('/') || request()->is('items*') ? 'active text-white fw-bold' : 'text-white' }}">
                         <i class="bi bi-box-seam"></i> Items
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('categories.index') }}" 
+                       class="nav-link {{ request()->is('categories*') ? 'active text-white fw-bold' : 'text-white' }}">
+                        <i class="bi bi-tags"></i> Categories
                     </a>
                 </li>
             </ul>
