@@ -7,10 +7,7 @@ use App\Http\Controllers\DocumentItemController;
 
 Route::resource('documents', DocumentController::class);
 
-Route::redirect('/', '/categories');
-Route::get('/items', function () {
-    return view('items');
-})->middleware(['auth'])->name('dashboard');
+Route::redirect('/', '/documents');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
