@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html data-bs-theme="dark">
 <head>
@@ -43,9 +44,9 @@
 
             <ul class="nav flex-column gap-1">
                 <li class="nav-item">
-                    <a href="{{ route('items.index') }}" 
-                       class="nav-link {{ request()->is('/') || request()->is('items*') ? 'active text-white fw-bold' : 'text-white' }}">
-                        <i class="bi bi-box-seam"></i> Items
+                    <a href="{{ route('documents.index') }}" 
+                       class="nav-link {{ request()->is('documents*') ? 'active text-white fw-bold' : 'text-white' }}">
+                        <i class="bi bi-folder"></i> Documents
                     </a>
                 </li>
 
@@ -54,6 +55,23 @@
                        class="nav-link {{ request()->is('categories*') ? 'active text-white fw-bold' : 'text-white' }}">
                         <i class="bi bi-tags"></i> Categories
                     </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('categories.discover') }}" 
+                       class="nav-link {{ request()->is('categories/discover') ? 'active text-white fw-bold' : 'text-white' }}">
+                        <i class="bi bi-compass"></i> Discover
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                                class="nav-link text-white bg-transparent border-0 w-100 text-start py-2">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
                 </li>
             </ul>
 
@@ -74,6 +92,8 @@
     </main>
 
     <!-- Vite bundle -->
-    @vite(['resources/js/app.js'])
-</body>
+<!--    @vite(['resources/js/app.js']) -->
+
+    @yield('scripts')
+    </body>
 </html>

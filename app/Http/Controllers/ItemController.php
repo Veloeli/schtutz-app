@@ -2,39 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Item;
+use App\Services\ItemService;
 use Illuminate\Http\Request;
 
 class ItemController extends Controller
 {
+    public function __construct(private ItemService $service) {}
+
     public function index()
     {
-        return Item::all();
+        $data = $this->service->getItemsForUser(auth()->user());
+        return view('items.index', $data);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'amount' => 'required|numeric'
-        ]);
-        Item::create($request->only('name', 'amount'));
-        return ['success' => true];
+        $this->service->createItem(auth()->user(), $request->all());
+        return redirect()->route('items.index');
     }
 
-    public function update(Request $request, Item $item)
+    public function update(Request $request, $itemId)
     {
-        $request->validate([
-            'name' => 'required',
-            'amount' => 'required|numeric'
-        ]);
-        $item->update($request->only('name', 'amount'));
-        return ['success' => true];
-    }
-
-    public function destroy(Item $item)
-    {
-        $item->delete();
-        return ['success' => true];
+        $item = Item::findOrFail($itemId);
+        $this->service->updateItem($item, $request->all());
+        return redirect()->route('items.index');
     }
 }

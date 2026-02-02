@@ -1,40 +1,51 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CategorySubscriptionController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentItemController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
+Route::resource('documents', DocumentController::class);
 
-/**
- * Items
- */
-Route::view('/', 'items')->name('items.index');
-Route::view('/items', 'items');
+Route::redirect('/', '/categories');
+Route::get('/items', function () {
+    return view('items');
+})->middleware(['auth'])->name('dashboard');
 
-/**
- * Categories
- */
-Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
-Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
-Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
-Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
-/**
- * Debug / Diagnostics
- */
-Route::get('/db-check', function () {
-    return [
-        'env'    => env('DB_DATABASE'),
-        'config' => config('database.connections.mysql.database'),
-        'actual' => DB::connection()->getDatabaseName(),
-    ];
+Route::middleware('auth')->group(function () {
+    Route::resource('documents', DocumentController::class);
+    Route::resource('documents.items', DocumentItemController::class);
+    
+    Route::post('/documents/toggle', [DocumentController::class, 'toggle'])->name('documents.toggle');
 });
 
-Route::get('/db-all', function () {
-    return config('database.connections');
+Route::middleware('auth')->group(function () {
+
+    // CRUD
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+    
+    // DISCOVER
+    Route::get('/categories/discover', [CategoryController::class, 'discover'])
+        ->name('categories.discover');
+
+    // SHARE (forced subscription)
+    Route::post('/categories/{category}/share', [CategorySubscriptionController::class, 'forceSubscribe'])
+        ->name('categories.share');
+
+    // SUBSCRIBE (self-subscribe)
+    Route::post('/categories/{category}/subscribe', [CategorySubscriptionController::class, 'subscribe'])
+        ->name('categories.subscribe');
+
+    // UNSUBSCRIBE (self-unsubscribe)
+    Route::post('/categories/{category}/unsubscribe', [CategorySubscriptionController::class, 'unsubscribe'])
+        ->name('categories.unsubscribe');
 });
+
+require __DIR__.'/auth.php';

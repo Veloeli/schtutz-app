@@ -1,17 +1,22 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ItemController;
+use App\Http\Controllers\Api\UserApiController;
+use App\Http\Controllers\Api\ItemApiController;
+use App\Http\Controllers\Api\CategoryApiController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::middleware('auth:sanctum')->group(function () {
 
-// -----------------------------
-// Your CRUD API routes
-// -----------------------------
-Route::get('/items', [ItemController::class, 'index']);
-Route::post('/items', [ItemController::class, 'store']);
-Route::put('/items/{item}', [ItemController::class, 'update']);
-Route::delete('/items/{item}', [ItemController::class, 'destroy']);
+    // User
+    Route::get('/user', [UserApiController::class, 'show']);
+
+    // Items
+    Route::get('/items', [ItemApiController::class, 'index']);
+    Route::post('/items', [ItemApiController::class, 'store']);
+    Route::put('/items/{item}', [ItemApiController::class, 'update']);
+
+    // Categories
+    Route::get('/categories', [CategoryApiController::class, 'index']);
+    Route::post('/categories', [CategoryApiController::class, 'store']);
+    Route::post('/categories/{category}/share', [CategoryApiController::class, 'share']);
+    Route::post('/categories/{category}/subscribe', [CategoryApiController::class, 'subscribe']);
+});
