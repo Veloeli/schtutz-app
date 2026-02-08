@@ -49,7 +49,7 @@
             </div>
 
             <div class="modal-body">
-                <p>Are you sure you want to delete <strong id="docTitle"></strong>?</p>
+                <p>Are you sure you want to delete <strong>{{ $document->title }}</strong>?</p>
             </div>
 
             <div class="modal-footer">

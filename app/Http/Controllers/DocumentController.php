@@ -14,7 +14,7 @@ class DocumentController extends Controller
 
     public function index()
     {
-        return view('documents.master', [
+        return view('documents.index', [
             'documents' => $this->documents->all(),
             'document' => null,
         ]);
@@ -22,7 +22,7 @@ class DocumentController extends Controller
 
     public function show(Document $document)
     {
-        return view('documents.master', [
+        return view('documents.index', [
             'documents' => $this->documents->all(),
             'document' => $document,
         ]);

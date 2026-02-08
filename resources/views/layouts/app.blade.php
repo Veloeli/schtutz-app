@@ -46,7 +46,7 @@
                 <li class="nav-item">
                     <a href="{{ route('documents.index') }}" 
                        class="nav-link {{ request()->is('documents*') ? 'active text-white fw-bold' : 'text-white' }}">
-                        <i class="bi bi-folder"></i> Documents
+                        <i class="bi bi-tags"></i> Documents
                     </a>
                 </li>
 
@@ -58,9 +58,9 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="{{ route('categories.discover') }}" 
-                       class="nav-link {{ request()->is('categories/discover') ? 'active text-white fw-bold' : 'text-white' }}">
-                        <i class="bi bi-compass"></i> Discover
+                    <a href="{{ route('teams.index') }}" 
+                       class="nav-link {{ request()->routeIs('teams.*') ? 'active text-white fw-bold' : 'text-white' }}">
+                        <i class="bi bi-tags"></i> Teams
                     </a>
                 </li>
 

@@ -20,20 +20,35 @@ class CategoryController extends Controller
     {
         $user = auth()->user();
 
-        // Use service to fetch categories relevant to the user
-        $categories = $this->categoryService->getCategoriesForUser($user);
+        $categories = $this->categoryService
+            ->getCategoriesForUser($user)
+            ->load('team')
+            ->sortBy('full_path');
 
-        // Needed for the Share modal
         $users = User::all();
 
         return view('categories.index', compact('categories', 'users'));
     }
 
+    public function create()
+    {
+        $user = auth()->user();
+
+        $allCategories = $this->categoryService
+            ->getCategoriesForUser($user)
+            ->sortBy('full_path');
+
+        return view('categories.create', compact('allCategories'));
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'is_private' => 'nullable|boolean',
+            'name'          => 'required|string|max:255',
+            'parent_id'     => 'nullable|exists:categories,id',
+            'code'          => 'nullable|string|max:50',
+            'is_selectable' => 'nullable|boolean',
+            'sort_order'    => 'nullable|integer',
         ]);
 
         $this->categoryService->createCategory(auth()->user(), $data);
@@ -41,20 +56,57 @@ class CategoryController extends Controller
         return redirect()->route('categories.index');
     }
 
+    public function edit(Category $category)
+    {
+        $this->authorize('update', $category);
+
+        $user = auth()->user();
+
+        // Load parent for the category being edited
+        $category->load('parent');
+
+        // Load parents for all categories to avoid N+1 and ensure tree integrity
+        $allCategories = $this->categoryService
+            ->getCategoriesForUser($user)
+            ->load('parent')
+            ->where('id', '!=', $category->id)
+            ->sortBy('full_path');
+
+        // Load teams the user belongs to
+        $teams = $user->teams;
+
+        return view('categories.edit', compact('category', 'allCategories', 'teams'));
+    }
+
+
     public function update(Request $request, Category $category)
     {
         $this->authorize('update', $category);
 
         $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'is_private' => 'nullable|boolean',
+            'name'          => 'required|string|max:255',
+            'parent_id' => [
+                'nullable',
+                'integer',
+                function ($attribute, $value, $fail) use ($category) {
+                    if ($value == $category->id) {
+                        return $fail("A category cannot be its own parent.");
+                    }
+
+                    if (in_array($value, $category->allDescendantIds())) {
+                        return $fail("A category cannot be assigned to one of its descendants.");
+                    }
+                }
+            ],
+            'team_id'       => 'nullable|exists:teams,id',
+            'code'          => 'nullable|string|max:50',
+            'is_selectable' => 'nullable|boolean',
+            'sort_order'    => 'nullable|integer',
         ]);
 
-        $data['is_private'] = isset($data['is_private']) ? 1 : 0;
+        $this->categoryService->updateCategory($category, $data);
 
-        $category->update($data);
-
-        return back();
+        return redirect()->route('categories.index');
     }
 
     public function destroy(Category $category)
@@ -63,22 +115,7 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        return back();
-    }
-
-    public function discover()
-    {
-        $user = auth()->user();
-
-        $categories = Category::with('owner')   // eager-load owner
-            ->where('is_private', 0)            // public categories
-            ->where('user_id', '!=', $user->id) // not owned by user
-            ->whereDoesntHave('subscribers', function ($q) use ($user) {
-                $q->where('user_id', $user->id); // not subscribed/shared
-            })
-            ->get();
-
-        return view('categories.discover', compact('categories'));
+        return redirect()->route('categories.index');
     }
 
 }

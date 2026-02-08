@@ -2,42 +2,25 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -46,13 +29,36 @@ class User extends Authenticatable
         ];
     }
 
-    public function categories()
+    public function ownedCategories()
     {
-        return $this->belongsToMany(Category::class)->withTimestamps();    
+        return $this->hasMany(Category::class, 'user_id');
     }
 
-    public function privateCategories()
+    public function teamCategories()
     {
-        return $this->hasMany(Category::class);
+        return Category::whereIn('team_id', $this->teams->pluck('id'));
+    }
+
+    /**
+     * Full membership records (TeamUser model).
+     */
+    public function teamMemberships()
+    {
+        return $this->hasMany(TeamUser::class);
+    }
+
+    /**
+     * Convenience: list of teams the user belongs to.
+     */
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class, 'team_user')
+            ->withPivot(['reveal_private','sharing_ratio'])
+            ->withTimestamps();
+    }
+
+    public function ownedTeams()
+    {
+        return $this->hasMany(Team::class, 'owner_id');
     }
 }

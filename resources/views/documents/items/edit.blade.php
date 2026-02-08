@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="container py-4">
-    <h2>Edit Item in "{{ $document->title }}"</h2>
+    <h2>Edit Item in Document "{{ $document->title }}"</h2>
 
     <form method="POST" action="{{ route('documents.items.update', [$document, $item]) }}">
         @csrf

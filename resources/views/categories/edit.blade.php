@@ -1,0 +1,133 @@
+@extends('layouts.app')
+
+@section('content')
+
+<div class="container">
+
+    <h2 class="mb-4">Edit Category</h2>
+
+    <form action="{{ route('categories.update', $category) }}" method="POST" class="mb-4">
+        @csrf
+        @method('PUT')
+
+        <!-- Name -->
+        <div class="mb-3">
+            <label class="form-label">Category Name</label>
+            <input type="text"
+                   name="name"
+                   class="form-control"
+                   value="{{ old('name', $category->name) }}"
+                   required>
+        </div>
+
+        <!-- Code (optional legacy) -->
+        <div class="mb-3">
+            <label class="form-label">Legacy Code (optional)</label>
+            <input type="text"
+                   name="code"
+                   class="form-control"
+                   value="{{ old('code', $category->code) }}">
+        </div>
+
+        <!-- Parent -->
+        <div class="mb-3">
+            <label class="form-label">Parent Category</label>
+            <select name="parent_id" class="form-select">
+                <option value="">— No parent —</option>
+
+                @foreach ($allCategories as $cat)
+                    @php
+                        $isSelf = $cat->id === $category->id;
+                        $isDescendant = $cat->isDescendantOf($category);
+                        $isParent = $cat->id === $category->parent_id;
+                    @endphp
+
+                    @if (! $isSelf && (! $isDescendant || $isParent))
+                        <option value="{{ $cat->id }}" @selected($category->parent_id == $cat->id)>
+                            {{ $cat->full_path }}
+                        </option>
+                    @endif
+                @endforeach
+            </select>
+        </div>
+
+        <!-- Selectable -->
+        <div class="form-check mb-3">
+            <input class="form-check-input"
+                   type="checkbox"
+                   name="is_selectable"
+                   value="1"
+                   id="selectableCheck"
+                   {{ $category->is_selectable ? 'checked' : '' }}>
+            <label class="form-check-label" for="selectableCheck">
+                Category can be selected
+            </label>
+        </div>
+
+        <!-- Team -->
+        <div class="mb-4">
+            <label class="form-label">Team</label>
+            <select name="team_id" class="form-select">
+                <option value="">— No team (private) —</option>
+
+                @foreach ($teams as $team)
+                    <option value="{{ $team->id }}" @selected($category->team_id == $team->id)>
+                        {{ $team->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <div class="d-flex gap-2">
+                <!-- Save -->
+                <button type="submit" class="btn btn-primary">Update</button>
+
+                <a href="{{ route('categories.index') }}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+
+            <!-- Right side: Delete (opens modal) -->
+            @can('delete', $category)
+            <button type="button"
+                    class="btn btn-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteModal">
+                Delete
+            </button>
+            @endcan
+        </div>
+    </form>
+
+</div>
+
+<!-- DELETE CATEGORY MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Category</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ $category->name }}</strong>?</p>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+                <form id="deleteDocumentForm"
+                      method="POST"
+                      action="{{ route('categories.destroy', $category) }}">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-danger">Delete Category</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

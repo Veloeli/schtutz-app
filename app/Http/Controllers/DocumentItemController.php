@@ -19,9 +19,16 @@ class DocumentItemController extends Controller
 
     public function create(Document $document)
     {
+        $user = auth()->user();
+
+        // Load categories visible to the user
+        $categories = app(\App\Services\CategoryService::class)
+            ->getCategoriesForUser($user)
+            ->sortBy('full_path');
+
         return view('documents.items.create', [
             'document' => $document,
-            'categories' => Category::all(),
+            'categories' => $categories,
         ]);
     }
 
@@ -41,15 +48,17 @@ class DocumentItemController extends Controller
 
     public function edit(Document $document, Item $item)
     {
-        // Optional safety check
-        if ($item->document_id !== $document->id) {
-            abort(404);
-        }
+        $user = auth()->user();
+
+        // Load categories visible to the user
+        $categories = app(\App\Services\CategoryService::class)
+            ->getCategoriesForUser($user)
+            ->sortBy('full_path');
 
         return view('documents.items.edit', [
             'document' => $document,
             'item' => $item,
-            'categories' => Category::all(),
+            'categories' => $categories,
         ]);
     }
 
