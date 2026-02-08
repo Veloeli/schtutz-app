@@ -61,6 +61,34 @@
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
 
                                                 <div>
+                                                    <strong>
+                                                        @if($item->quantity !== null)
+                                                            {{ $item->quantity * 1 }}
+                                                        @endif
+                                                        {{ $item->name }}
+                                                        @if($item->amount !== null)
+                                                            {{ number_format($item->amount, 2) }}
+                                                        @endif
+                                                    </strong>
+
+                                                    <div class="text-muted small">
+                                                        @if($item->category)
+                                                            {{ $item->category->name }}
+                                                        @endif
+                                                    </div>
+                                                </div>
+
+                                                <div class="d-flex gap-2">
+                                                    <a href="{{ route('documents.items.edit', [$doc, $item]) }}"
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        Edit
+                                                    </a>
+                                                </div>
+
+                                            </li>
+<!--                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                                                <div>
                                                     <strong>{{ $item->name }}</strong>
 
                                                     <div class="text-muted small">
@@ -85,7 +113,7 @@
                                                     </a>
                                                 </div>
 
-                                            </li>
+                                            </li> -->
                                         @endforeach
                                     </ul>
                                 @endif

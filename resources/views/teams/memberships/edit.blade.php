@@ -11,48 +11,22 @@
 
         <div class="mb-3">
             <label class="form-label fw-bold">Member</label>
-            <input type="text" class="form-control" value="{{ $membership->user->email }}" disabled>
+            <input type="text" class="form-control" value="{{ $membership->user->name }} ({{ $membership->user->email }})" disabled>
         </div>
 
         <div class="row">
-            <div class="col-md-4 mb-3">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Reveal Private</label>
+                <select name="reveal_private" class="form-select">
+                    <option value="0" @selected(!$membership->reveal_private)>No</option>
+                    <option value="1" @selected($membership->reveal_private)>Yes</option>
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Sharing Ratio</label>
                 <input type="number" name="sharing_ratio" class="form-control"
                        value="{{ old('sharing_ratio', $membership->sharing_ratio) }}" step="any">
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold">Member From</label>
-                <input type="date" name="member_from" class="form-control"
-                       value="{{ old('member_from', $membership->member_from) }}">
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold">Member To</label>
-                <input type="date" name="member_to" class="form-control"
-                       value="{{ old('member_to', $membership->member_to) }}">
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label fw-bold">Reveal Private</label>
-            <select name="reveal_private" class="form-select">
-                <option value="0" @selected(!$membership->reveal_private)>No</option>
-                <option value="1" @selected($membership->reveal_private)>Yes</option>
-            </select>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">User Apply Date</label>
-                <input type="date" name="user_apply_date" class="form-control"
-                       value="{{ old('user_apply_date', $membership->user_apply_date) }}">
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Team Accept Date</label>
-                <input type="date" name="team_accept_date" class="form-control"
-                       value="{{ old('team_accept_date', $membership->team_accept_date) }}">
             </div>
         </div>
 
@@ -61,6 +35,21 @@
             <input type="text" name="clearing_account" class="form-control"
                    value="{{ old('clearing_account', $membership->clearing_account) }}">
         </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Member From</label>
+                <input type="date" name="member_from" class="form-control"
+                       value="{{ old('member_from', $membership->member_from) }}">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Member To</label>
+                <input type="date" name="member_to" class="form-control"
+                       value="{{ old('member_to', $membership->member_to) }}">
+            </div>
+        </div>
+
 
         <div class="d-flex justify-content-between mt-4">
 

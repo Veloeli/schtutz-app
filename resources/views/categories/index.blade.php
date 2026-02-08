@@ -17,7 +17,6 @@
         <tr>
             <th>Name</th>
             <th>Team</th>
-            <th>Owner</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -28,23 +27,21 @@
             <td>{{ str_repeat('— ', $category->depth) . $category->name }}</td>
             <td>
                 @if ($category->team)
-                    <span class="badge bg-primary">
+                    <span class="badge bg-secondary">
                         {{ $category->team->name }}
                     </span>
                 @else
-                    <span class="text-muted">No team (private)</span>
+                    <span class="text-muted">(private)</span>
                 @endif
             </td>
-            <td>
-                {{ $category->owner->name }}
-            </td>
             <td style="width: 1%; white-space: nowrap;">
-                <!-- Edit (now a page) -->
                 @can('update', $category)
                     <a href="{{ route('categories.edit', $category) }}"
                        class="btn btn-sm btn-outline-primary">
                         Edit
                     </a>
+                @else
+                    <span class="text-muted">({{ $category->owner->name }})</span>
                 @endcan
 
             </td>

@@ -10,23 +10,16 @@
         @method('PUT')
 
         <div class="mb-3">
+            <label class="form-label">Item Name</label>
+            <input type="text" name="name" class="form-control"
+                   value="{{ old('name', $item->name) }}">
+        </div>
+
+        <div class="mb-3">
             <label class="form-label">Amount</label>
             <input type="number" step="0.01" name="amount"
                    class="form-control"
                    value="{{ old('amount', $item->amount ?? '') }}">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Quantity</label>
-            <input type="number" step="0.001" name="quantity"
-                   class="form-control"
-                   value="{{ old('quantity', $item->quantity ?? '') }}">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Item Name</label>
-            <input type="text" name="name" class="form-control"
-                   value="{{ old('name', $item->name) }}">
         </div>
 
         <div class="mb-3">
@@ -40,6 +33,13 @@
                     </option>
                 @endforeach
             </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Quantity</label>
+            <input type="number" step="0.001" name="quantity"
+                   class="form-control"
+                   value="{{ old('quantity', $item->quantity ?? '') }}">
         </div>
 
         <div class="d-flex justify-content-between mt-4">

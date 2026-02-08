@@ -11,6 +11,34 @@ class TeamController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+        // Teams where the user is a member
+        $memberships = $user->teamMemberships()->with('team')
+            ->with([
+                'team' => function ($q) {
+                    $q->withSum('memberships as sharing_ratio_sum', 'sharing_ratio');
+                }
+            ])
+            ->orderBy('member_from', 'desc')
+            ->get();
+
+        // Teams the user owns but is NOT a member of
+        $ownedTeamsNotMember = $user->ownedTeams()
+            ->whereNotIn('id', $memberships->pluck('team_id'))
+            ->with(['members:id,name,email'])
+            ->withSum('memberships as sharing_ratio_sum', 'sharing_ratio')
+            ->orderBy('name')
+            ->get();
+
+        return view('teams.index', [
+            'memberships' => $memberships,
+            'ownedTeamsNotMember' => $ownedTeamsNotMember,
+        ]);
+    }
+
+/*    public function index()
+    {
+        $user = auth()->user();
         $userId = $user->id;
 
         // Teams the user owns or belongs to
@@ -38,7 +66,7 @@ class TeamController extends Controller
 
         return view('teams.index', compact('teams', 'memberships'));
     }
-
+*/
 /*    public function index()
     {
         $userId = auth()->id();
@@ -79,6 +107,12 @@ class TeamController extends Controller
 
     public function edit(Team $team)
     {
+        $team->load([
+            'members',
+            'memberships',
+            'memberships.user',
+        ])->loadSum('memberships as sharing_ratio_sum', 'sharing_ratio');
+
         return view('teams.edit', compact('team'));
     }
 
@@ -86,9 +120,10 @@ class TeamController extends Controller
     {
         $validated = $request->validate([
             'name'        => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'owner_id'    => ['required', 'exists:users,id'], 
         ]);
 
+        // Update team
         $team->update($validated);
 
         return redirect()
