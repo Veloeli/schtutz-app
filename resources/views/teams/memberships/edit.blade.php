@@ -10,13 +10,13 @@
         @method('PUT')
 
         <div class="mb-3">
-            <label class="form-label fw-bold">Member</label>
+            <label class="form-label">Member</label>
             <input type="text" class="form-control" value="{{ $membership->user->name }} ({{ $membership->user->email }})" disabled>
         </div>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Reveal Private</label>
+                <label class="form-label">Reveal Private</label>
                 <select name="reveal_private" class="form-select">
                     <option value="0" @selected(!$membership->reveal_private)>No</option>
                     <option value="1" @selected($membership->reveal_private)>Yes</option>
@@ -24,27 +24,27 @@
             </div>
 
             <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Sharing Ratio</label>
+                <label class="form-label">Sharing Ratio</label>
                 <input type="number" name="sharing_ratio" class="form-control"
                        value="{{ old('sharing_ratio', $membership->sharing_ratio) }}" step="any">
             </div>
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-bold">Clearing Account</label>
+            <label class="form-label">Clearing Account</label>
             <input type="text" name="clearing_account" class="form-control"
                    value="{{ old('clearing_account', $membership->clearing_account) }}">
         </div>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Member From</label>
+                <label class="form-label">Member From</label>
                 <input type="date" name="member_from" class="form-control"
                        value="{{ old('member_from', $membership->member_from) }}">
             </div>
 
             <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Member To</label>
+                <label class="form-label">Member To</label>
                 <input type="date" name="member_to" class="form-control"
                        value="{{ old('member_to', $membership->member_to) }}">
             </div>

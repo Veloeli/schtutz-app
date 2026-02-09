@@ -42,16 +42,26 @@ class DocumentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title'         => 'required|string|max:255',
+            'posting_date'  => 'required|date',
         ]);
 
-        // Create the document and capture the model
+        // Hidden defaults
+        $validated['repeat_pattern']  = 0;
+        $validated['repeat_constant'] = 0;
+
+        // Owner is always the current user
+        $validated['owner_id'] = $request->user()->id;
+
+        // Create the document
         $document = $this->documents->create($validated);
 
-        // Mark this document as expanded
+        // Expand the newly created document in the UI
         session()->put("expanded_docs.{$document->id}", true);
 
-        return redirect()->route('documents.index');
+        return redirect()
+            ->route('documents.show', $document)
+            ->with('success', 'Document created successfully.');
     }
 
     public function edit(Document $document, Request $request)
@@ -66,9 +76,23 @@ class DocumentController extends Controller
 
     public function update(Request $request, Document $document)
     {
+        // make sure we have a valid repeat_constant even if Blade delivers null
+        if ($request->input('repeat_pattern') === "0") {
+            $request->merge([
+                'repeat_constant' => 0
+            ]);
+        }
+
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title'            => 'required|string|max:255',
+            'posting_date'     => 'required|date',
+            'repeat_pattern'   => 'required|numeric|min:0|max:24',
+            'repeat_constant'  => 'required|boolean',
         ]);
+
+        if ((int) $validated['repeat_pattern'] === 0) {
+            $validated['repeat_constant'] = 0;
+        }
 
         $this->documents->update($document, $validated);
 

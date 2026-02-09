@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+namespace App\Services;
+
 use App\Models\Document;
 use Illuminate\Support\Collection;
 
@@ -24,17 +26,12 @@ class DocumentService
 
     public function create(array $data): Document
     {
-        return Document::create([
-            'title' => $data['title'],
-        ]);
+        return Document::create($data);
     }
 
     public function update(Document $document, array $data): Document
     {
-        $document->update([
-            'title' => $data['title'],
-        ]);
-
+        $document->update($data);
         return $document;
     }
 
