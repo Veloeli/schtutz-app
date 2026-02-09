@@ -16,40 +16,7 @@
 </div>
 
 <!-- Month Selector -->
-<div 
-    x-data="monthSelector('{{ $currentMonth ?? now()->format('Y-m') }}')"
-    x-init="init()" 
-    class="d-flex align-items-center gap-3 mb-4 user-select-none">
-
-    <button @click="prevMonth()" class="btn btn-outline-secondary px-3 py-1">←</button>
-
-    <div 
-        @click="openPicker = !openPicker" 
-        class="fw-semibold cursor-pointer"
-    >
-        <span x-text="formatted"></span>
-    </div>
-
-    <button @click="nextMonth()" class="btn btn-outline-secondary px-3 py-1">→</button>
-
-    <!-- Month Picker Dropdown -->
-    <div 
-        x-show="openPicker" 
-        @click.outside="openPicker = false"
-        class="absolute bg-white shadow rounded p-3 mt-10"
-    >
-        <template x-for="year in years">
-            <div class="font-semibold mt-2" x-text="year"></div>
-            <template x-for="m in 12">
-                <div 
-                    class="cursor-pointer hover:bg-gray-100 px-2 py-1"
-                    @click="select(year, m)"
-                    x-text="monthName(m)"
-                ></div>
-            </template>
-        </template>
-    </div>
-</div>
+<x-month-picker name="month" :value="$month" />
 
 <!-- Documents Table -->
 <table class="table table-hover">
@@ -227,68 +194,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-</script>
-
-<script>
-function monthSelector(initial) {
-    return {
-        current: initial,
-        openPicker: false,
-
-        init() {
-            document.addEventListener('keydown', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                if (document.querySelector('.modal.show')) return;
-
-                if (e.key === 'ArrowLeft') this.prevMonth();
-                if (e.key === 'ArrowRight') this.nextMonth();
-                if (e.key === 'Home') this.goToCurrent();
-            });
-        },
-
-        get formatted() {
-            const [y, m] = this.current.split('-');
-            return new Date(y, m - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
-        },
-
-        years: Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i),
-
-        monthName(m) {
-            return new Date(2024, m - 1).toLocaleString('default', { month: 'long' });
-        },
-
-        select(year, month) {
-            this.current = `${year}-${String(month).padStart(2, '0')}`;
-            this.openPicker = false;
-            this.navigate();
-        },
-
-        prevMonth() {
-            const d = new Date(this.current + '-01');
-            d.setMonth(d.getMonth() - 1);
-            this.current = d.toISOString().slice(0, 7);
-            this.navigate();
-        },
-
-        nextMonth() {
-            const d = new Date(this.current + '-01');
-            d.setMonth(d.getMonth() + 1);
-            this.current = d.toISOString().slice(0, 7);
-            this.navigate();
-        },
-
-        goToCurrent() {
-            this.current = new Date().toISOString().slice(0, 7);
-            this.navigate();
-        },
-
-        navigate() {
-            const url = new URL(window.location.href);
-            url.searchParams.set('month', this.current);
-            window.location.href = url.toString();
-        }
-    }
-}
 </script>
 
 @endsection

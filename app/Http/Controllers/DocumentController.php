@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Services\DocumentService;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class DocumentController extends Controller
 {
@@ -12,7 +13,7 @@ class DocumentController extends Controller
         protected DocumentService $documents
     ) {}
 
-    public function index(Request $request)
+/*    public function index(Request $request)
     {
         $month = $request->input('month', now()->format('Y-m'));
 
@@ -20,6 +21,23 @@ class DocumentController extends Controller
             'documents' => $this->documents->forMonth($month),
             'currentMonth' => $month,
             'document' => null,
+        ]);
+    }
+*/
+    public function index(Request $request)
+    {
+        $month = $request->query('month')
+            ? Carbon::parse($request->query('month') . '-01')
+            : now();
+
+        $documents = Document::whereBetween('posting_date', [
+            $month->copy()->startOfMonth(),
+            $month->copy()->endOfMonth(),
+        ])->get();
+
+        return view('documents.index', [
+            'documents' => $documents,
+            'month' => $month->format('Y-m'),
         ]);
     }
 
