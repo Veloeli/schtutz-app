@@ -92,8 +92,8 @@
     </main>
 
     <!-- Vite bundle -->
-<!--    @vite(['resources/js/app.js']) -->
+    @vite(['resources/js/app.js'])
 
     @yield('scripts')
-    </body>
+</body>
 </html>

@@ -47,6 +47,11 @@ class User extends Authenticatable
         return $this->hasMany(TeamUser::class);
     }
 
+    public function ownedTeams()
+    {
+        return $this->hasMany(Team::class, 'owner_id');
+    }
+
     /**
      * Convenience: list of teams the user belongs to.
      */
@@ -57,8 +62,18 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function ownedTeams()
+    public function activeTeams()
     {
-        return $this->hasMany(Team::class, 'owner_id');
+        $today = now();
+
+        return $this->belongsToMany(Team::class, 'team_user')
+            ->where(function ($q) use ($today) {
+                $q->whereNull('member_from')
+                  ->orWhere('member_from', '<=', $today);
+            })
+            ->where(function ($q) use ($today) {
+                $q->whereNull('member_to')
+                  ->orWhere('member_to', '>=', $today);
+            });
     }
 }

@@ -12,18 +12,24 @@ class DocumentController extends Controller
         protected DocumentService $documents
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
+        $month = $request->input('month', now()->format('Y-m'));
+
         return view('documents.index', [
-            'documents' => $this->documents->all(),
+            'documents' => $this->documents->forMonth($month),
+            'currentMonth' => $month,
             'document' => null,
         ]);
     }
 
-    public function show(Document $document)
+    public function show(Document $document, Request $request)
     {
+        $month = $request->input('month', now()->format('Y-m'));
+
         return view('documents.index', [
-            'documents' => $this->documents->all(),
+            'documents' => $this->documents->forMonth($month),
+            'currentMonth' => $month,
             'document' => $document,
         ]);
     }
@@ -48,9 +54,14 @@ class DocumentController extends Controller
         return redirect()->route('documents.index');
     }
 
-    public function edit(Document $document)
+    public function edit(Document $document, Request $request)
     {
-        return view('documents.edit', compact('document'));
+        $month = $request->input('month', now()->format('Y-m'));
+
+        return view('documents.edit', [
+            'document' => $document,
+            'currentMonth' => $month,
+        ]);
     }
 
     public function update(Request $request, Document $document)

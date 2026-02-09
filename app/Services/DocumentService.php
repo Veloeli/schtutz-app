@@ -12,6 +12,16 @@ class DocumentService
         return Document::orderBy('created_at', 'desc')->get();
     }
 
+    public function forMonth(string $month)
+    {
+        [$year, $monthNum] = explode('-', $month);
+
+        return Document::whereYear('posting_date', $year)
+            ->whereMonth('posting_date', $monthNum)
+            ->orderBy('posting_date', 'desc')
+            ->get();
+    }
+
     public function create(array $data): Document
     {
         return Document::create([

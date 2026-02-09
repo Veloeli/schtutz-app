@@ -62,7 +62,7 @@ class TeamUserController extends Controller
         $membership->update($validated);
 
         return redirect()
-            ->route('teams.index', $team)
+            ->route('teams.index')
             ->with('success', 'Member updated successfully.');
     }
 

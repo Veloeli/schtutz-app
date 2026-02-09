@@ -15,8 +15,8 @@ class CategoryService
      */
     public function getCategoriesForUser(User $user)
     {
-        // All team IDs the user belongs to
-        $teamIds = $user->teams->pluck('id');
+        // All team IDs the user CURRENTLY belongs to
+        $teamIds = $user->activeTeams->pluck('id');
 
         // Team members who explicitly allow revealing private categories
         $teamMemberIds = User::whereHas('teams', function ($query) use ($teamIds) {
@@ -25,9 +25,29 @@ class CategoryService
         })->pluck('id');
 
         return Category::query()
-            ->where('user_id', $user->id)                 // user's own categories
-            ->orWhereIn('team_id', $teamIds)              // categories assigned to the team
-            ->orWhereIn('user_id', $teamMemberIds)        // categories of team members who allow reveal
+            ->where(function ($q) use ($user, $teamIds, $teamMemberIds) {
+
+                //
+                // (1) My non-team categories
+                //
+                $q->where(function ($q2) use ($user) {
+                    $q2->where('user_id', $user->id)
+                       ->whereNull('team_id');
+                })
+
+                //
+                // (2) Categories belonging to my active teams
+                //
+                ->orWhereIn('team_id', $teamIds)
+
+                //
+                // (3) Non-team categories of team members who allow reveal
+                //
+                ->orWhere(function ($q2) use ($teamMemberIds) {
+                    $q2->whereIn('user_id', $teamMemberIds)
+                       ->whereNull('team_id');
+                });
+            })
             ->with(['parent', 'team'])
             ->orderBy('sort_order')
             ->orderBy('name')

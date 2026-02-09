@@ -9,6 +9,10 @@
         @csrf
         @method('PUT')
 
+        @cannot('update', $team)
+            <fieldset disabled>
+        @endcannot
+
         <div class="mb-3">
             <label class="form-label">Name</label>
             <input type="text" name="name" class="form-control"
@@ -37,10 +41,16 @@
             </select>
         </div>
 
+        @cannot('update', $team)
+            </fieldset>
+        @endcannot
+
         <div class="d-flex justify-content-between mt-4">
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Update</button>
+                @can('update', $team)
+                    <button type="submit" class="btn btn-primary">Update</button>
+                @endcan
 
                 <a href="{{ route('teams.index') }}" class="btn btn-secondary">
                     Cancel

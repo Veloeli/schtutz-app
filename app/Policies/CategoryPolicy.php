@@ -35,7 +35,21 @@ class CategoryPolicy
 
     public function update(User $user, Category $category)
     {
-        return $category->user_id === $user->id;
+        // 1. User owns the category
+        if ($category->user_id === $user->id) {
+            return true;
+        }
+
+        // 2. Category has no team → no team permissions apply
+        if (! $category->team) {
+            return false;
+        }
+
+        // 3. User is a member of the team
+        return $category->team
+            ->members()
+            ->where('user_id', $user->id)
+            ->exists();
     }
 
     public function delete(User $user, Category $category)
