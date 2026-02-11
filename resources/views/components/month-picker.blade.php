@@ -16,7 +16,6 @@
     .month-picker {
         margin-bottom: 1rem; /* or 1.5rem, 2rem, etc. */
     }
-
 </style>
 
 <div class="d-flex align-items-center gap-3 month-picker">

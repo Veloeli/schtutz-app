@@ -17,6 +17,9 @@ Route::middleware('auth')->get('/dashboard', function () {
 // Authenticated application routes
 Route::middleware('auth')->group(function () {
 
+    Route::get('/import', [\App\Http\Controllers\ImportController::class, 'index']);
+    Route::post('/import', [\App\Http\Controllers\ImportController::class, 'store']);
+
     Route::prefix('teams')->name('teams.')->group(function () {
 
         // Team CRUD

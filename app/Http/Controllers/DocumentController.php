@@ -43,13 +43,18 @@ class DocumentController extends Controller
 
     public function show(Document $document, Request $request)
     {
+
+        $month = \Carbon\Carbon::parse($document->posting_date)->format('Y-m');
+        return redirect()->route('documents.index', ['month' => $month]);
+
+/*
         $month = $request->input('month', now()->format('Y-m'));
 
         return view('documents.index', [
             'documents' => $this->documents->forMonth($month),
             'currentMonth' => $month,
             'document' => $document,
-        ]);
+        ]);*/
     }
 
     public function create()
@@ -114,7 +119,8 @@ class DocumentController extends Controller
 
         $this->documents->update($document, $validated);
 
-        return redirect()->route('documents.show', $document);
+        $month = \Carbon\Carbon::parse($document->posting_date)->format('Y-m');
+        return redirect()->route('documents.index', ['month' => $month]);
     }
 
     public function destroy(Document $document)
