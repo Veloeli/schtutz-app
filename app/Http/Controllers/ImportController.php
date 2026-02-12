@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Jobs\ImportSqlJob;
+use App\Jobs\StartImportJob;
 
 class ImportController extends Controller
 {
@@ -21,7 +20,7 @@ class ImportController extends Controller
 
         $stored = $request->file('sql_file')->store('imports', 'local');
 
-        dispatch(new ImportSqlJob($stored));
+        dispatch(new StartImportJob($stored));
 
         return back()->with('success', 'Import started in background.');
     }

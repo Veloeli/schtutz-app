@@ -2,24 +2,21 @@
 
 namespace App\Jobs;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
-class ImportSqlJob implements ShouldQueue
+class StartImportJob implements ShouldQueue
 {
-    use Queueable;
-
     public function __construct(public string $path) {}
 
     public function handle()
     {
         $fullPath = Storage::disk('local')->path($this->path);
-
         $handle = fopen($fullPath, 'r');
-        $statement = '';
+
+        $chunk = [];
+        $chunkNumber = 1;
 
         while (($line = fgets($handle)) !== false) {
             $trim = trim($line);
@@ -28,14 +25,21 @@ class ImportSqlJob implements ShouldQueue
                 continue;
             }
 
-            $statement .= $line;
+            $chunk[] = $line;
 
-            if (str_ends_with($trim, ';')) {
-                DB::unprepared($statement);
-                $statement = '';
+            if (count($chunk) === 1000) {
+                dispatch(new ProcessChunkJob($chunkNumber, $chunk));
+                $chunk = [];
+                $chunkNumber++;
             }
         }
 
+        if (!empty($chunk)) {
+            dispatch(new ProcessChunkJob($chunkNumber, $chunk));
+        }
+
         fclose($handle);
+
+        Log::info("StartImportJob finished dispatching chunks");
     }
 }
