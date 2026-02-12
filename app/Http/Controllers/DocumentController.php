@@ -13,27 +13,13 @@ class DocumentController extends Controller
         protected DocumentService $documents
     ) {}
 
-/*    public function index(Request $request)
-    {
-        $month = $request->input('month', now()->format('Y-m'));
-
-        return view('documents.index', [
-            'documents' => $this->documents->forMonth($month),
-            'currentMonth' => $month,
-            'document' => null,
-        ]);
-    }
-*/
     public function index(Request $request)
     {
         $month = $request->query('month')
             ? Carbon::parse($request->query('month') . '-01')
             : now();
 
-        $documents = Document::whereBetween('posting_date', [
-            $month->copy()->startOfMonth(),
-            $month->copy()->endOfMonth(),
-        ])->get();
+        $documents = $this->documents->forMonth($month);
 
         return view('documents.index', [
             'documents' => $documents,
@@ -47,14 +33,6 @@ class DocumentController extends Controller
         $month = \Carbon\Carbon::parse($document->posting_date)->format('Y-m');
         return redirect()->route('documents.index', ['month' => $month]);
 
-/*
-        $month = $request->input('month', now()->format('Y-m'));
-
-        return view('documents.index', [
-            'documents' => $this->documents->forMonth($month),
-            'currentMonth' => $month,
-            'document' => $document,
-        ]);*/
     }
 
     public function create()

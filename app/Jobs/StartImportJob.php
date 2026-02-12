@@ -27,7 +27,7 @@ class StartImportJob implements ShouldQueue
 
             $chunk[] = $line;
 
-            if (count($chunk) === 1000) {
+            if (count($chunk) === 5000) {
                 dispatch(new ProcessChunkJob($chunkNumber, $chunk));
                 $chunk = [];
                 $chunkNumber++;

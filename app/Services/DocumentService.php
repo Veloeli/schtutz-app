@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Document;
 use Illuminate\Support\Collection;
+use Carbon\Carbon;
 
 class DocumentService
 {
@@ -14,12 +15,13 @@ class DocumentService
         return Document::orderBy('created_at', 'desc')->get();
     }
 
-    public function forMonth(string $month)
+    public function forMonth(Carbon $month)
     {
-        [$year, $monthNum] = explode('-', $month);
-
-        return Document::whereYear('posting_date', $year)
-            ->whereMonth('posting_date', $monthNum)
+        return Document::with('owner')
+            ->whereBetween('posting_date', [
+                $month->copy()->startOfMonth(),
+                $month->copy()->endOfMonth(),
+            ])
             ->orderBy('posting_date', 'desc')
             ->get();
     }

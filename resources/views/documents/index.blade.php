@@ -23,8 +23,7 @@
     <thead>
         <tr>
             <th>Document</th>
-            <th>Date</th>
-            <th width="120">Actions</th>
+            <th>Actions</th>
         </tr>
     </thead>
 
@@ -36,18 +35,23 @@
                 <td class="cursor-pointer"
                     data-bs-toggle="collapse"
                     data-bs-target="#doc-{{ $doc->id }}">
+
                     {{ $doc->title }}
+                    
+                    <div class="text-muted small">
+                        {{ $doc->posting_date }}
+
+                        @if($doc->owner_id !== auth()->id())
+                            <span class="badge bg-secondary">
+                                {{ $doc->owner->name }}
+                            </span>
+                        @endif
+                    </div>
                 </td>
 
-                <td class="cursor-pointer"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#doc-{{ $doc->id }}">
-                    {{ $doc->posting_date }}
-                </td>
-
-                <td>
+                <td style="width: 1%; white-space: nowrap;">
                     <a href="{{ route('documents.edit', $doc) }}"
-                       class="btn btn-sm btn-outline-primary">
+                       class="btn btn-sm btn-primary">
                         Edit
                     </a>
                 </td>
@@ -68,62 +72,49 @@
                                 @else
                                     <ul class="list-group mb-3">
                                         @foreach($doc->items as $item)
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <li class="list-group-item">
+                                                <div class="row align-items-center">
 
-                                                <div>
-                                                    <strong>
-                                                        @if($item->quantity !== null)
-                                                            {{ $item->quantity * 1 }}
-                                                        @endif
-                                                        {{ $item->name }}
-                                                        @if($item->amount !== null)
-                                                            {{ number_format($item->amount, 2) }}
-                                                        @endif
-                                                    </strong>
+                                                    <!-- LEFT COLUMN: quantity + name + category -->
+                                                    <div class="col-6">
+                                                        <div class="fw-bold">
+                                                            @if($item->quantity !== null)
+                                                                {{ $item->quantity * 1 }} ×
+                                                            @endif
+                                                            {{ $item->name }}
+                                                        </div>
 
-                                                    <div class="text-muted small">
-                                                        @if($item->category)
+                                                        <div class="text-muted small">
+                                                            <span class="badge bg-secondary">
+                                                                @if($item->category->team_id)
+                                                                    {{ $item->category->team->name }}
+                                                                @else
+                                                                    {{ $doc->owner->name }}
+                                                                @endif
+                                                            </span>
                                                             {{ $item->category->name }}
-                                                        @endif
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                <div class="d-flex gap-2">
-                                                    <a href="{{ route('documents.items.edit', [$doc, $item]) }}"
-                                                       class="btn btn-sm btn-outline-primary">
-                                                        Edit
-                                                    </a>
-                                                </div>
-
-                                            </li>
-<!--                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-
-                                                <div>
-                                                    <strong>{{ $item->name }}</strong>
-
-                                                    <div class="text-muted small">
-                                                        @if($item->quantity !== null)
-                                                            Qty: {{ number_format($item->quantity, 3) }}
-                                                        @endif
-
+                                                    <!-- MIDDLE COLUMN: amount -->
+                                                    <div class="col-3 text-end">
                                                         @if($item->amount !== null)
-                                                            • Amount: {{ number_format($item->amount, 2) }}
-                                                        @endif
-
-                                                        @if($item->category)
-                                                            • Category: {{ $item->category->name }}
+                                                            <span class="fw-bold">
+                                                                {{ number_format($item->amount, 2) }}
+                                                            </span>
                                                         @endif
                                                     </div>
-                                                </div>
 
-                                                <div class="d-flex gap-2">
-                                                    <a href="{{ route('documents.items.edit', [$doc, $item]) }}"
-                                                       class="btn btn-sm btn-outline-primary">
-                                                        Edit
-                                                    </a>
-                                                </div>
+                                                    <!-- RIGHT COLUMN: actions -->
+                                                    <div class="col-3 text-end">
+                                                        <a href="{{ route('documents.items.edit', [$doc, $item]) }}"
+                                                           class="btn btn-sm btn-primary">
+                                                            Edit
+                                                        </a>
+                                                    </div>
 
-                                            </li> -->
+                                                </div>
+                                            </li>
                                         @endforeach
                                     </ul>
                                 @endif
