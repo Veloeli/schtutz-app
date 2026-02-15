@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,4 +59,35 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+    
+    public function storeDeputy(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => [
+                'required',
+                'email',
+                'exists:users,email',
+                function ($attribute, $value, $fail) {
+                    if ($value === auth()->user()->email) {
+                        $fail('You cannot assign yourself as a deputy.');
+                    }
+                },
+            ],
+        ]);
+        
+
+        $deputy = User::where('email', $validated['email'])->first();
+
+        auth()->user()->deputies()->syncWithoutDetaching([$deputy->id]);
+
+        return back()->with('success', 'Stellvertretung hinzugefügt.');
+    }
+
+    public function destroyDeputy(User $deputy)
+    {
+        auth()->user()->deputies()->detach($deputy->id);
+
+        return back()->with('success', 'Stellvertretung entfernt.');
+    }
+
 }

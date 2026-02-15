@@ -29,6 +29,16 @@ class User extends Authenticatable
         ];
     }
 
+    public function deputies()
+    {
+        return $this->belongsToMany(User::class, 'deputies', 'user_id', 'deputy_user_id');
+    }
+
+    public function isDeputyFor()
+    {
+        return $this->belongsToMany(User::class, 'deputies', 'deputy_user_id', 'user_id');
+    }
+
     public function ownedCategories()
     {
         return $this->hasMany(Category::class, 'user_id');

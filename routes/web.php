@@ -6,6 +6,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentItemController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamUserController;
+use App\Http\Controllers\ProfileController;
 
 Route::redirect('/', '/documents');
 
@@ -58,8 +59,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [CategoryController::class, 'store'])->name('store');
         Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
-
     });
+
+    // PROFILES
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/deputies', [ProfileController::class, 'storeDeputy'])->name('profile.deputies.store');
+    Route::delete('/profile/deputies/{deputy}', [ProfileController::class, 'destroyDeputy'])->name('profile.deputies.destroy');
+
 });
 
 require __DIR__.'/auth.php';
