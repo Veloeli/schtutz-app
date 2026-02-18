@@ -12,7 +12,7 @@
 
         <!-- Name -->
         <div class="mb-3">
-            <label class="form-label">Category Name</label>
+            <label class="form-label">Name</label>
             <input type="text"
                    name="name"
                    class="form-control"
@@ -22,11 +22,22 @@
 
         <!-- Code (optional legacy) -->
         <div class="mb-3">
-            <label class="form-label">Legacy Code (optional)</label>
+            <label class="form-label">Code</label>
             <input type="text"
                    name="code"
                    class="form-control"
                    value="{{ old('code', $category->code) }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="type" class="form-label">Type</label>
+            <select name="type" id="type" class="form-select">
+                @foreach(\App\Models\Category::TYPES as $key => $label)
+                    <option value="{{ $key }}" @selected($category->type === $key)>
+                        {{ $label }}
+                    </option>
+                @endforeach
+            </select>
         </div>
 
         <!-- Selectable -->

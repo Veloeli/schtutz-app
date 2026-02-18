@@ -8,17 +8,26 @@ use App\Services\VisibilityService;
 
 class Category extends Model
 {
+    public const TYPES = [
+        'EX' => 'Expenses',
+        'IN' => 'Income',
+        'IC' => 'Capital Income',
+        'AL' => 'Asset or Liability',
+        'AP' => 'Asset Portfolio',
+        'CL' => 'Clearing Account',
+    ];
+
     protected $fillable = [
         'name',
         'user_id',
         'team_id',
         'code',
         'is_selectable',
+        'type',
     ];
 
     protected static function booted()
     {
-logger()->info('Category.booted', []);
         static::addGlobalScope('visibility', function ($query) {
             $user = auth()->user();
 
@@ -33,19 +42,16 @@ logger()->info('Category.booted', []);
                 $q->whereIn('user_id', $allowedUsers)
                   ->orWhereIn('team_id', $allowedTeams);
             });
-\Log::info('Category.scope EXECUTED');
         });
     }
 
     public function owner()
     {
-logger()->info('Category.owner', []);
         return $this->belongsTo(User::class, 'user_id');
     }
 
     public function team()
     {
-logger()->info('Category.team', []);
         return $this->belongsTo(Team::class, 'team_id');
     }
 }

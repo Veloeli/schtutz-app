@@ -14,7 +14,6 @@ class CategoryService
      */
     public function allVisible(User $user): Collection
     {
-logger()->info('CategoryService.allVisible', [$user]);
         // Global scope already filters visibility
         return Category::select('categories.*')
             ->with(['team', 'owner'])
@@ -30,6 +29,8 @@ logger()->info('CategoryService.allVisible', [$user]);
             'user_id'       => $user->id,
             'team_id'       => $data['team_id'] ?? null,
             'code'          => $data['code'] ?? null,
+            'type'          => $data['type'],
+            'is_selectable' => isset($data['is_selectable']),
         ]);
     }
 
@@ -39,8 +40,10 @@ logger()->info('CategoryService.allVisible', [$user]);
             'name'          => $data['name'],
             'team_id'       => $data['team_id'] === '' ? null : $data['team_id'],
             'code'          => $data['code'] ?? null,
+            'type'          => $data['type'],
             'is_selectable' => isset($data['is_selectable']),
         ]);
+
         return $category;
     }
 

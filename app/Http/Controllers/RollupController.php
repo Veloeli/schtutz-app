@@ -109,11 +109,13 @@ class RollupController extends Controller
     */
     public function edit(Rollup $rollup)
     {
-        $rootId = session('rollups.root_id');
+        $assigned = $rollup->categories()->get();
 
-        $children = $rollup->children()->get();
+        $available = Category::whereNotIn('id', $assigned->pluck('id'))
+            ->orderBy('code')
+            ->get();
 
-        return view('rollups.edit', compact('rollup', 'children', 'rootId'));
+        return view('rollups.edit', compact('rollup', 'assigned', 'available'));
     }
 
     public function update(Request $request, Rollup $rollup)
@@ -173,14 +175,21 @@ class RollupController extends Controller
     | Attach category (leaf only)
     |--------------------------------------------------------------------------
     */
-    public function attachCategory(Request $request, Rollup $rollup)
+    public function attachCategory(Rollup $rollup, Request $request)
     {
-        $data = $request->validate([
+        $request->validate([
             'category_id' => 'required|exists:categories,id',
         ]);
 
-        $this->service->attachCategory($rollup, Category::find($data['category_id']));
+        $rollup->categories()->attach($request->category_id);
 
-        return redirect()->back()->with('success', 'Category added to rollup.');
+        return back();
+    }
+
+    public function detachCategory(Rollup $rollup, Category $category)
+    {
+        $rollup->categories()->detach($category->id);
+
+        return back();
     }
 }

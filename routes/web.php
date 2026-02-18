@@ -60,7 +60,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
     });
     
-    // ROLLUPS
     Route::prefix('rollups')->name('rollups.')->group(function () {
         Route::get('/', [RollupController::class, 'index'])->name('index');
         Route::get('/create', [RollupController::class, 'create'])->name('create');
@@ -69,8 +68,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/{rollup}/edit', [RollupController::class, 'edit'])->name('edit');
         Route::put('/{rollup}', [RollupController::class, 'update'])->name('update');
         Route::delete('/{rollup}', [RollupController::class, 'destroy'])->name('destroy');
+
         Route::post('/{rollup}/users', [RollupController::class, 'attachUser'])->name('attachUser');
+
         Route::post('/{rollup}/categories', [RollupController::class, 'attachCategory'])->name('attachCategory');
+        Route::delete('/{rollup}/categories/{category}', [RollupController::class, 'detachCategory'])->name('detachCategory');
     });
 
     // PROFILES
