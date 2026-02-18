@@ -18,6 +18,7 @@ class RollupController extends Controller
     {
         $user = auth()->user();
         $rootRollups = Rollup::whereNull('parent_id')->get();
+        $selectedRoot = null;
 
         // 1. URL root_id hat höchste Priorität
         if ($request->filled('root_id')) {
