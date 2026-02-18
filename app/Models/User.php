@@ -14,6 +14,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'preferred_root_id',
     ];
 
     protected $hidden = [
@@ -85,5 +86,10 @@ class User extends Authenticatable
                 $q->whereNull('member_to')
                   ->orWhere('member_to', '>=', $today);
             });
+    }
+
+    public function preferredRoot()
+    {
+        return $this->belongsTo(Rollup::class, 'preferred_root_id');
     }
 }

@@ -24,7 +24,7 @@
     <tbody>
     @foreach ($categories as $category)
         <tr>
-            <td>{{ str_repeat('— ', $category->depth) . $category->name }}</td>
+            <td>{{ $category->name }}</td>
             <td>
                 @if ($category->team)
                     <span class="badge bg-secondary">
@@ -37,7 +37,7 @@
             <td style="width: 1%; white-space: nowrap;">
                 @can('update', $category)
                     <a href="{{ route('categories.edit', $category) }}"
-                       class="btn btn-sm btn-outline-primary">
+                       class="btn btn-sm btn-primary">
                         Edit
                     </a>
                 @else

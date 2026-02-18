@@ -7,6 +7,7 @@ use App\Http\Controllers\DocumentItemController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamUserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RollupController;
 
 Route::redirect('/', '/documents');
 
@@ -51,14 +52,25 @@ Route::middleware('auth')->group(function () {
 
     // CATEGORIES
     Route::prefix('categories')->name('categories.')->group(function () {
-
-        // CRUD
         Route::get('/', [CategoryController::class, 'index'])->name('index');
         Route::get('/create', [CategoryController::class, 'create'])->name('create');
         Route::get('/{category}/edit', [CategoryController::class, 'edit'])->name('edit');
         Route::post('/', [CategoryController::class, 'store'])->name('store');
         Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
+    });
+    
+    // ROLLUPS
+    Route::prefix('rollups')->name('rollups.')->group(function () {
+        Route::get('/', [RollupController::class, 'index'])->name('index');
+        Route::get('/create', [RollupController::class, 'create'])->name('create');
+        Route::post('/', [RollupController::class, 'storeRoot'])->name('storeRoot');
+        Route::post('/{parent}/children', [RollupController::class, 'storeChild'])->name('storeChild');
+        Route::get('/{rollup}/edit', [RollupController::class, 'edit'])->name('edit');
+        Route::put('/{rollup}', [RollupController::class, 'update'])->name('update');
+        Route::delete('/{rollup}', [RollupController::class, 'destroy'])->name('destroy');
+        Route::post('/{rollup}/users', [RollupController::class, 'attachUser'])->name('attachUser');
+        Route::post('/{rollup}/categories', [RollupController::class, 'attachCategory'])->name('attachCategory');
     });
 
     // PROFILES

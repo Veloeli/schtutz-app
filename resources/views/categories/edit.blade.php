@@ -29,28 +29,6 @@
                    value="{{ old('code', $category->code) }}">
         </div>
 
-        <!-- Parent -->
-        <div class="mb-3">
-            <label class="form-label">Parent Category</label>
-            <select name="parent_id" class="form-select">
-                <option value="">— No parent —</option>
-
-                @foreach ($allCategories as $cat)
-                    @php
-                        $isSelf = $cat->id === $category->id;
-                        $isDescendant = $cat->isDescendantOf($category);
-                        $isParent = $cat->id === $category->parent_id;
-                    @endphp
-
-                    @if (! $isSelf && (! $isDescendant || $isParent))
-                        <option value="{{ $cat->id }}" @selected($category->parent_id == $cat->id)>
-                            {{ $cat->full_path }}
-                        </option>
-                    @endif
-                @endforeach
-            </select>
-        </div>
-
         <!-- Selectable -->
         <div class="form-check mb-3">
             <input class="form-check-input"

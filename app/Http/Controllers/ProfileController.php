@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Rollup;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
@@ -18,8 +19,11 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $rootRollups = Rollup::roots()->get();
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'rootRollups' => $rootRollups,
         ]);
     }
 
@@ -28,13 +32,21 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $request->validate([
+            'preferred_root_id' => ['nullable', 'exists:rollup,id'],
+        ]);
+
+        $user = $request->user();
+        $user->fill($validated);
+        $user->preferred_root_id = $request->preferred_root_id;
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

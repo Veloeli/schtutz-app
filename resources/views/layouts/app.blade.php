@@ -41,12 +41,12 @@
                 </div>
             @endif
 
-            @if (session('success'))
+<!--            @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show shadow-sm alert-responsive mb-1">
                     <span class="alert-line">{{ session('success') }}</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-            @endif
+            @endif-->
         </div>
     </header>
 
@@ -73,6 +73,13 @@
                         <a href="{{ route('categories.index') }}" 
                            class="nav-link {{ request()->is('categories*') ? 'active text-white fw-bold' : 'text-white' }}">
                             <i class="bi bi-tags"></i> Categories
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ route('rollups.index') }}" 
+                           class="nav-link {{ request()->routeIs('rollups.*') ? 'active text-white fw-bold' : 'text-white' }}">
+                            <i class="bi bi-diagram-3"></i> Rollups
                         </a>
                     </li>
 
@@ -125,6 +132,7 @@
 </body>
 </html>
 
+<!--
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const alerts = document.querySelectorAll('.alert-success');
@@ -140,3 +148,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 </script>
+-->

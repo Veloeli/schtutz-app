@@ -35,14 +35,16 @@ class TeamPolicy
 
     public function update(User $user, Team $team)
     {
-        return $team->owner_id === $user->id
-            || $team->members->contains($user->id);
+        return VisibilityService::teamVisible($user, $team);
+/*        return $team->owner_id === $user->id
+            || $team->members->contains($user->id);*/
     }
 
     public function delete(User $user, Team $team)
     {
-        return $team->owner_id === $user->id
-            || $team->members->contains($user->id);
+        return VisibilityService::teamVisible($user, $team);
+/*        return $team->owner_id === $user->id
+            || $team->members->contains($user->id);*/
     }
 
     /**

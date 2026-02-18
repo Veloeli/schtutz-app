@@ -46,8 +46,10 @@
 
             <!-- Left side: Update + Cancel -->
             <div class="d-flex gap-2">
+                @can('update', $item)
                 <button type="submit" class="btn btn-primary">Update</button>
-
+                @endcan
+                
                 <a href="{{ route('documents.show', $document) }}"
                    class="btn btn-secondary">
                     Cancel
@@ -55,12 +57,14 @@
             </div>
 
             <!-- Right side: Delete (opens modal) -->
+            @can('delete', $item)
             <button type="button"
                     class="btn btn-danger"
                     data-bs-toggle="modal"
                     data-bs-target="#deleteModal">
                 Delete
             </button>
+            @endcan
 
         </div>
 
@@ -83,6 +87,7 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
 
+                @can('delete', $item)
                 <form id="deleteItemForm" 
                     method="POST"
                     action="{{ route('documents.items.destroy', [$document, $item]) }}">
@@ -90,6 +95,7 @@
                     @method('DELETE')
                     <button class="btn btn-danger">Delete</button>
                 </form>
+                @endcan
             </div>
         </div>
     </div>

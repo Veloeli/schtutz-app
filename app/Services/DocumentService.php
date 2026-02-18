@@ -2,9 +2,8 @@
 
 namespace App\Services;
 
-namespace App\Services;
-
 use App\Models\Document;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
@@ -15,15 +14,20 @@ class DocumentService
         return Document::orderBy('created_at', 'desc')->get();
     }
 
-    public function forMonth(Carbon $month)
+    public function forMonth(Carbon $month): Collection
     {
-        return Document::with('owner')
-            ->whereBetween('posting_date', [
+        return Document::whereBetween('posting_date', [
                 $month->copy()->startOfMonth(),
                 $month->copy()->endOfMonth(),
             ])
             ->orderBy('posting_date', 'desc')
             ->get();
+    }
+
+    public function visibleFor(User $user, Carbon $month): Collection
+    {
+        // Global scopes already enforce visibility
+        return $this->forMonth($month);
     }
 
     public function create(array $data): Document

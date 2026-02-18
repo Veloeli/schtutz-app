@@ -19,9 +19,9 @@ class TeamUserPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, TeamUser $teamUser): bool
+    public function view(User $user, TeamUser $teamUser)
     {
-        return false;
+        return VisibilityService::teamMemberVisible($user, $teamUser);
     }
 
     /**

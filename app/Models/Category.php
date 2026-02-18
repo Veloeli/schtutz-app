@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use App\Services\VisibilityService;
 
 class Category extends Model
 {
@@ -10,114 +12,40 @@ class Category extends Model
         'name',
         'user_id',
         'team_id',
-        'parent_id',
         'code',
         'is_selectable',
-        'sort_order',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
+    protected static function booted()
+    {
+logger()->info('Category.booted', []);
+        static::addGlobalScope('visibility', function ($query) {
+            $user = auth()->user();
 
-    // owner of the category
+            if (!$user) {
+                return;
+            }
+
+            $allowedUsers = \App\Services\VisibilityService::allowedUserIds($user);
+            $allowedTeams = \App\Services\VisibilityService::allowedTeamIds($user);
+
+            $query->where(function ($q) use ($allowedUsers, $allowedTeams) {
+                $q->whereIn('user_id', $allowedUsers)
+                  ->orWhereIn('team_id', $allowedTeams);
+            });
+\Log::info('Category.scope EXECUTED');
+        });
+    }
+
     public function owner()
     {
+logger()->info('Category.owner', []);
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // team which uses the category
     public function team()
     {
+logger()->info('Category.team', []);
         return $this->belongsTo(Team::class, 'team_id');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Hierarchy
-    |--------------------------------------------------------------------------
-    */
-
-    // Parent category
-    public function parent()
-    {
-        return $this->belongsTo(Category::class, 'parent_id');
-    }
-
-    // Children categories
-    public function children()
-    {
-        return $this->hasMany(Category::class, 'parent_id');
-    }
-
-    public function isDescendantOf(Category $potentialParent): bool
-    {
-        // Safety: if the potential parent *is* this category, it's not a descendant
-        if ($this->id === $potentialParent->id) {
-            return false;
-        }
-
-        // Start walking up the tree
-        $current = $this->parent;
-
-        // Loop until we reach the root
-        while ($current) {
-
-            // Found the parent in the chain
-            if ($current->id === $potentialParent->id) {
-                return true;
-            }
-
-            // Move up one level
-            $current = $current->parent;
-        }
-
-        // No match found → not a descendant
-        return false;
-    }
-
-    public function descendants()
-    {
-        return $this->children()->with('descendants');
-    }
-
-    public function allDescendantIds()
-    {
-        return $this->descendants()->pluck('id')->toArray();
-    }
-
-    public function getDepthAttribute()
-    {
-        $depth = 0;
-        $parent = $this->parent;
-
-        while ($parent) {
-            $depth++;
-            $parent = $parent->parent;
-        }
-
-        return $depth;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Accessors
-    |--------------------------------------------------------------------------
-    */
-
-    // Full hierarchical path: "Food / Groceries / Vegetables"
-    public function getFullPathAttribute()
-    {
-        $segments = [];
-        $node = $this;
-
-        while ($node) {
-            $segments[] = $node->name;
-            $node = $node->parent;
-        }
-
-        return implode(' / ', array_reverse($segments));
     }
 }

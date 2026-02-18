@@ -15,8 +15,37 @@
     </a>
 </div>
 
-<!-- Month Selector -->
-<x-month-picker name="month" :value="$month" />
+<div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+    <!-- Month Selector -->
+    <x-month-picker name="month" :value="$month" />
+
+    <form method="GET" class="mb-3">
+        <select name="filter" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
+
+            <option value="">All</option>
+
+            <optgroup label="Teams">
+                @foreach ($teams as $team)
+                    <option value="team-{{ $team->id }}"
+                        {{ request('filter') === 'team-'.$team->id ? 'selected' : '' }}>
+                        {{ $team->name }}
+                    </option>
+                @endforeach
+            </optgroup>
+
+            <optgroup label="Members">
+                @foreach ($members as $member)
+                    <option value="member-{{ $member->id }}"
+                        {{ request('filter') === 'member-'.$member->id ? 'selected' : '' }}>
+                        {{ $member->name }}
+                    </option>
+                @endforeach
+            </optgroup>
+
+        </select>
+    </form>
+</div>
+
 
 <!-- Documents Table -->
 <table class="table table-hover">
@@ -50,10 +79,12 @@
                 </td>
 
                 <td style="width: 1%; white-space: nowrap;">
+                    @can('update', $doc)
                     <a href="{{ route('documents.edit', $doc) }}"
                        class="btn btn-sm btn-primary">
                         Edit
                     </a>
+                    @endcan
                 </td>
             </tr>
 
@@ -107,10 +138,12 @@
 
                                                     <!-- RIGHT COLUMN: actions -->
                                                     <div class="col-3 text-end">
+                                                        @can('update', $item)
                                                         <a href="{{ route('documents.items.edit', [$doc, $item]) }}"
                                                            class="btn btn-sm btn-primary">
                                                             Edit
                                                         </a>
+                                                        @endcan
                                                     </div>
 
                                                 </div>
@@ -119,10 +152,12 @@
                                     </ul>
                                 @endif
 
+                                @can('update', $doc)
                                 <a href="{{ route('documents.items.create', $doc) }}"
                                    class="btn btn-primary btn-sm">
                                     Add Item
                                 </a>
+                                @endcan
 
                             </div>
                         </div>

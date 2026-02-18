@@ -20,10 +20,9 @@ class CategoryController extends Controller
     {
         $user = auth()->user();
 
-        $categories = $this->categoryService
-            ->getCategoriesForUser($user)
-            ->load('team')
-            ->sortBy('full_path');
+        // Visibility is enforced by the Category global scope
+        $categories = $this->categoryService->allVisible($user)
+            ->sortBy('name');
 
         $users = User::all();
 
@@ -34,24 +33,19 @@ class CategoryController extends Controller
     {
         $user = auth()->user();
 
-        $allCategories = $this->categoryService
-            ->getCategoriesForUser($user)
-            ->sortBy('full_path');
-
-        return view('categories.create', compact('allCategories'));
+        return view('categories.create');
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'name'          => 'required|string|max:255',
-            'parent_id'     => 'nullable|exists:categories,id',
+            'team_id'       => 'nullable|exists:teams,id',
             'code'          => 'nullable|string|max:50',
             'is_selectable' => 'nullable|boolean',
-            'sort_order'    => 'nullable|integer',
         ]);
 
-        $this->categoryService->createCategory(auth()->user(), $data);
+        $this->categoryService->create(auth()->user(), $data);
 
         return redirect()->route('categories.index');
     }
@@ -62,22 +56,10 @@ class CategoryController extends Controller
 
         $user = auth()->user();
 
-        // Load parent for the category being edited
-        $category->load('parent');
-
-        // Load parents for all categories to avoid N+1 and ensure tree integrity
-        $allCategories = $this->categoryService
-            ->getCategoriesForUser($user)
-            ->load('parent')
-            ->where('id', '!=', $category->id)
-            ->sortBy('full_path');
-
-        // Load teams the user belongs to
         $teams = $user->teams;
 
-        return view('categories.edit', compact('category', 'allCategories', 'teams'));
+        return view('categories.edit', compact('category', 'teams'));
     }
-
 
     public function update(Request $request, Category $category)
     {
@@ -85,26 +67,12 @@ class CategoryController extends Controller
 
         $data = $request->validate([
             'name'          => 'required|string|max:255',
-            'parent_id' => [
-                'nullable',
-                'integer',
-                function ($attribute, $value, $fail) use ($category) {
-                    if ($value == $category->id) {
-                        return $fail("A category cannot be its own parent.");
-                    }
-
-                    if (in_array($value, $category->allDescendantIds())) {
-                        return $fail("A category cannot be assigned to one of its descendants.");
-                    }
-                }
-            ],
             'team_id'       => 'nullable|exists:teams,id',
             'code'          => 'nullable|string|max:50',
             'is_selectable' => 'nullable|boolean',
-            'sort_order'    => 'nullable|integer',
         ]);
 
-        $this->categoryService->updateCategory($category, $data);
+        $this->categoryService->update($category, $data);
 
         return redirect()->route('categories.index');
     }
@@ -117,5 +85,4 @@ class CategoryController extends Controller
 
         return redirect()->route('categories.index');
     }
-
 }

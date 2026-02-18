@@ -67,9 +67,11 @@
         <div class="d-flex justify-content-between align-items-center mt-4">
 
             <div class="d-flex gap-2">
+                @can('update', $document)
                 <button type="submit" class="btn btn-primary">
                     Update
                 </button>
+                @endcan
 
                 <a href="{{ route('documents.show', $document) }}"
                    class="btn btn-secondary">
@@ -77,12 +79,14 @@
                 </a>
             </div>
 
+            @can('delete', $document)
             <button type="button"
                     class="btn btn-danger"
                     data-bs-toggle="modal"
                     data-bs-target="#deleteModal">
                 Delete
             </button>
+            @endcan
 
         </div>
     </form>
@@ -112,6 +116,7 @@
                     Cancel
                 </button>
 
+                @can('delete', $document)
                 <form method="POST"
                       action="{{ route('documents.destroy', $document) }}">
                     @csrf
@@ -120,6 +125,7 @@
                         Delete
                     </button>
                 </form>
+                @endcan
             </div>
 
         </div>

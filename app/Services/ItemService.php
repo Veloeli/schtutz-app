@@ -7,31 +7,15 @@ use App\Models\Category;
 
 class ItemService
 {
-    public function getItemsForUser($user)
+    public function visibleFor(User $user): Collection
     {
-        $items = Item::query()->get();
+        // Load all items with their relationships
+        $items = Item::with('document', 'category')->get();
 
-        $ownedPrivate = Category::where('is_private', true)
-            ->where('user_id', $user->id)
-            ->get();
-
-        $sharedPrivate = $user->categories()
-            ->where('is_private', true)
-            ->get();
-
-        $publicSubscribed = $user->categories()
-            ->where('is_private', false)
-            ->get();
-
-        $categories = $ownedPrivate
-            ->merge($sharedPrivate)
-            ->merge($publicSubscribed)
-            ->unique('id');
-
-        return [
-            'items' => $items,
-            'categories' => $categories,
-        ];
+        // Filter using the ItemPolicy
+        return $items->filter(function ($item) use ($user) {
+            return Gate::forUser($user)->allows('view', $item);
+        });
     }
 
     public function createItem($user, array $data)

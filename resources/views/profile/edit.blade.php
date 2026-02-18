@@ -34,6 +34,20 @@
                        value="{{ old('email', auth()->user()->email) }}">
             </div>
 
+            <div class="mb-3">
+                <label class="form-label">Preferred Rollup Hierarchy</label>
+                <select name="preferred_root_id" class="form-select">
+                    <option value="">— None —</option>
+
+                    @foreach($rootRollups as $root)
+                        <option value="{{ $root->id }}"
+                            @selected(old('preferred_root_id', auth()->user()->preferred_root_id) == $root->id)>
+                            {{ $root->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             <button class="btn btn-primary">Save</button>
         </form>
     </div>

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Services\DocumentService;
+use App\Models\User;
+use App\Models\Team;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -19,11 +21,33 @@ class DocumentController extends Controller
             ? Carbon::parse($request->query('month') . '-01')
             : now();
 
-        $documents = $this->documents->forMonth($month);
+        $user = auth()->user();
+
+        // A) Filter documents using the service (which uses the policy)
+        $documents = $this->documents->visibleFor($user, $month);
+
+        // B) Keep your dropdown logic exactly as before
+        $representedUsers = User::whereHas('deputies', function ($q) use ($user) {
+            $q->where('deputy_user_id', $user->id);
+        })->get();
+
+        $userIds = collect([$user->id])
+            ->merge($representedUsers->pluck('id'))
+            ->unique();
+
+        $teams = Team::whereHas('memberships', function ($q) use ($userIds) {
+            $q->whereIn('user_id', $userIds);
+        })->get();
+
+        $members = User::whereHas('teams', function ($q) use ($teams) {
+            $q->whereIn('team_id', $teams->pluck('id'));
+        })->get();
 
         return view('documents.index', [
             'documents' => $documents,
             'month' => $month->format('Y-m'),
+            'teams' => $teams,
+            'members' => $members,
         ]);
     }
 
