@@ -5,7 +5,12 @@
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-4">Profile</h2>
+
+    <a href="{{ route('password.change') }}" class="btn btn-primary">
+        Change Password
+    </a>
 </div>
+
 
 {{-- PERSONAL INFORMATION --}}
 <div class="card mb-4">

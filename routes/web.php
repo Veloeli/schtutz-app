@@ -9,12 +9,15 @@ use App\Http\Controllers\TeamUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RollupController;
 
-Route::redirect('/', '/documents');
+// Welcome page (public)
+Route::get('/', function () {
+    return view('welcome');
+});
 
-// Dashboard
 Route::middleware('auth')->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
+
 
 // Authenticated application routes
 Route::middleware('auth')->group(function () {
@@ -60,6 +63,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
     });
     
+    // ROLLUPS
     Route::prefix('rollups')->name('rollups.')->group(function () {
         Route::get('/', [RollupController::class, 'index'])->name('index');
         Route::get('/create', [RollupController::class, 'create'])->name('create');
@@ -70,6 +74,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{rollup}', [RollupController::class, 'destroy'])->name('destroy');
 
         Route::post('/{rollup}/users', [RollupController::class, 'attachUser'])->name('attachUser');
+        Route::delete('/{rollup}/categories/{user}', [RollupController::class, 'detachUser'])->name('detachUser');
 
         Route::post('/{rollup}/categories', [RollupController::class, 'attachCategory'])->name('attachCategory');
         Route::delete('/{rollup}/categories/{category}', [RollupController::class, 'detachCategory'])->name('detachCategory');
@@ -81,6 +86,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/deputies', [ProfileController::class, 'storeDeputy'])->name('profile.deputies.store');
     Route::delete('/profile/deputies/{deputy}', [ProfileController::class, 'destroyDeputy'])->name('profile.deputies.destroy');
 
+/*    // AUTHENTICATION
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+*/
 });
 
 require __DIR__.'/auth.php';

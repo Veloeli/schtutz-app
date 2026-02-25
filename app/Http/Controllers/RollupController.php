@@ -110,12 +110,30 @@ class RollupController extends Controller
     public function edit(Rollup $rollup)
     {
         $assigned = $rollup->categories()->get();
+        
+        // Assigned users (from pivot rollup_user) 
+        $assignedUsers = $rollup->users()->get();
 
-        $available = Category::whereNotIn('id', $assigned->pluck('id'))
+        // 1. Load root and full subtree
+        $rootId = session('root_id');
+        $root = Rollup::with('childrenRecursive')->findOrFail($rootId);
+
+        // 2. Collect all rollup IDs in this tree
+        $allRollupIds = collect([$root->id]);
+//        $this->collectDescendants($root, $allRollupIds);
+        $allRollupIds = Rollup::descendantIdsOf([$root]);
+
+        // 3. Categories assigned anywhere in this tree
+        $assignedInTree = Category::whereHas('rollups', function ($q) use ($allRollupIds) {
+            $q->whereIn('rollup_id', $allRollupIds);
+        })->pluck('id');
+
+        // 4. Available categories = not used anywhere in this tree
+        $available = Category::whereNotIn('id', $assignedInTree)
             ->orderBy('code')
             ->get();
 
-        return view('rollups.edit', compact('rollup', 'assigned', 'available'));
+        return view('rollups.edit', compact('rollup', 'assigned', 'available', 'assignedUsers'));
     }
 
     public function update(Request $request, Rollup $rollup)
@@ -159,15 +177,40 @@ class RollupController extends Controller
     | Attach user (root only)
     |--------------------------------------------------------------------------
     */
-    public function attachUser(Request $request, Rollup $rollup)
+    public function attachUser(Request $request)
     {
-        $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
+        $request->validate([
+            'rollup_id' => 'required|exists:rollup,id',
+            'email' => 'required|email'
         ]);
 
-        $this->service->attachUser($rollup, User::find($data['user_id']));
+        $rollup = Rollup::findOrFail($request->rollup_id);
 
-        return redirect()->back()->with('success', 'User added to rollup.');
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->with('error', 'User not found.');
+        }
+
+        // Avoid duplicates
+        if ($rollup->users()->where('user_id', $user->id)->exists()) {
+            return back()->with('error', 'User already assigned.');
+        }
+
+        $rollup->users()->attach($user->id);
+
+        return back()->with('success', 'User added.');
+    }
+
+    public function detachUser(Rollup $rollup, User $user)
+    {
+        // Only detach if the relation exists
+        if ($rollup->users()->where('user_id', $user->id)->exists()) {
+            $rollup->users()->detach($user->id);
+            return back()->with('success', 'User removed.');
+        }
+
+        return back()->with('error', 'User was not assigned.');
     }
 
     /*

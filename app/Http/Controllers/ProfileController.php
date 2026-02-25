@@ -92,14 +92,14 @@ class ProfileController extends Controller
 
         auth()->user()->deputies()->syncWithoutDetaching([$deputy->id]);
 
-        return back()->with('success', 'Stellvertretung hinzugefügt.');
+        return back()->with('success', 'Deputy attached.');
     }
 
     public function destroyDeputy(User $deputy)
     {
         auth()->user()->deputies()->detach($deputy->id);
 
-        return back()->with('success', 'Stellvertretung entfernt.');
+        return back()->with('success', 'Deputy removed.');
     }
 
 }

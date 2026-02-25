@@ -16,7 +16,7 @@
         <div class="ms-auto">
             <a href="{{ route('rollups.edit', ['rollup' => $node->id]) }}"
                class="btn btn-sm btn-primary">
-                Edit
+               {{ $node->parent_id ? 'Edit' : 'Settings' }}
             </a>
         </div>
     </li>

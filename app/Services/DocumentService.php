@@ -14,20 +14,29 @@ class DocumentService
         return Document::orderBy('created_at', 'desc')->get();
     }
 
-    public function forMonth(Carbon $month): Collection
+    public function visibleFor(User $user, Carbon $month): Collection
     {
-        return Document::whereBetween('posting_date', [
-                $month->copy()->startOfMonth(),
-                $month->copy()->endOfMonth(),
+        $allowedUsers = VisibilityService::allowedUserIds($user);
+
+        $start = $month->copy()->startOfMonth();
+        $end   = $month->copy()->endOfMonth();
+
+        return Document::query()
+            ->whereBetween('posting_date', [$start, $end])
+            ->where(function ($q) use ($allowedUsers) {
+                $q->whereIn('owner_id', $allowedUsers)
+                  ->orWhereHas('items.category'); // category global scope applies
+            })
+            ->with([
+                'owner',
+                'items' => function ($q) {
+                    $q->whereHas('category') // only items with visible categories
+                      ->with('category.team')
+                      ->with('document');
+                },
             ])
             ->orderBy('posting_date', 'desc')
             ->get();
-    }
-
-    public function visibleFor(User $user, Carbon $month): Collection
-    {
-        // Global scopes already enforce visibility
-        return $this->forMonth($month);
     }
 
     public function create(array $data): Document

@@ -19,7 +19,7 @@ class CategoryService
             ->with(['team', 'owner'])
             ->orderBy('name')
             ->get();
-           }
+   }
 
 
     public function create(User $user, array $data): Category
@@ -34,15 +34,22 @@ class CategoryService
         ]);
     }
 
-    public function update(Category $category, array $data): Category
+    public function update(Category $category, array $data)
     {
-        $category->update([
-            'name'          => $data['name'],
-            'team_id'       => $data['team_id'] === '' ? null : $data['team_id'],
-            'code'          => $data['code'] ?? null,
-            'type'          => $data['type'],
-            'is_selectable' => isset($data['is_selectable']),
-        ]);
+        // Only update fields that are actually provided
+        $allowed = [
+            'name',
+            'code',
+            'type',
+            'is_selectable',
+        ];
+
+        // If team_id is provided, allow assignment (your second-step workflow)
+        if (array_key_exists('team_id', $data)) {
+            $allowed[] = 'team_id';
+        }
+
+        $category->update(array_intersect_key($data, array_flip($allowed)));
 
         return $category;
     }

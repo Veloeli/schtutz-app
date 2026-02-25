@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Services\VisibilityService;
 
 class Category extends Model
 {
+    use HasFactory;
+    
     public const TYPES = [
         'EX' => 'Expenses',
         'IN' => 'Income',
@@ -53,5 +56,10 @@ class Category extends Model
     public function team()
     {
         return $this->belongsTo(Team::class, 'team_id');
+    }
+
+    public function rollups()
+    {
+        return $this->belongsToMany(Rollup::class, 'rollup_category');
     }
 }

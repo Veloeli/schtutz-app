@@ -14,31 +14,62 @@ class Rollup extends Model
         'name',
         'parent_id',
         'code',
-        'user_id',   // informational creator
+        'user_id',
     ];
 
     protected static function booted()
     {
-        static::addGlobalScope('visibility', function ($query) {
-            $user = auth()->user();
+        static::addGlobalScope('visibility', function (Builder $query) {
 
+            $user = auth()->user();
             if (!$user) {
-                return; // no filtering for guests
+                return;
             }
 
-            $allowedUsers = \App\Services\VisibilityService::allowedUserIds($user);
+            $allowedUsers = VisibilityService::allowedUserIds($user);
 
-            $query->where(function ($q) use ($allowedUsers) {
+            // 1. Find root rollups the user can access
+            $rootIds = Rollup::withoutGlobalScopes()
+                ->whereNull('parent_id')
+                ->where(function ($q) use ($allowedUsers) {
+                    $q->whereIn('user_id', $allowedUsers)
+                      ->orWhereHas('users', function ($uq) use ($allowedUsers) {
+                          $uq->whereIn('users.id', $allowedUsers);
+                      });
+                })
+                ->pluck('id')
+                ->toArray();
 
-                // 1. Rollups the user created
-                $q->whereIn('user_id', $allowedUsers)
+            // If user has no root access, show nothing
+            if (empty($rootIds)) {
+                $query->whereRaw('1 = 0');
+                return;
+            }
 
-                // 2. Rollups assigned via pivot
-                  ->orWhereHas('users', function ($uq) use ($allowedUsers) {
-                        $uq->whereIn('users.id', $allowedUsers);
-                  });
-            });
+            // 2. Collect all descendants of those roots
+            $visibleIds = Rollup::descendantIdsOf($rootIds);
+
+            // 3. Apply final visibility filter
+            $query->whereIn('id', $visibleIds);
         });
+    }
+
+    public static function descendantIdsOf(array $rootIds): array
+    {
+        $all = $rootIds;
+        $queue = $rootIds;
+
+        while (!empty($queue)) {
+            $children = Rollup::withoutGlobalScopes()
+                ->whereIn('parent_id', $queue)
+                ->pluck('id')
+                ->toArray();
+
+            $queue = $children;
+            $all = array_merge($all, $children);
+        }
+
+        return array_unique($all);
     }
 
     /*
@@ -75,7 +106,7 @@ class Rollup extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | Category Mapping (only for leaf nodes)
+    | Category Mapping
     |--------------------------------------------------------------------------
     */
 

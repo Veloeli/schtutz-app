@@ -36,14 +36,16 @@
             </td>
             <td style="width: 1%; white-space: nowrap;">
                 @can('update', $category)
-                    <a href="{{ route('categories.edit', $category) }}"
+                    <a id="edit-category-{{ $category->id }}"
+                       href="{{ route('categories.edit', $category) }}"
                        class="btn btn-sm btn-primary">
                         Edit
                     </a>
                 @else
-                    <span class="text-muted">({{ $category->owner->name }})</span>
+                    <span id="owner-category-{{ $category->id }}" class="text-muted">
+                        ({{ $category->owner->name }})
+                    </span>
                 @endcan
-
             </td>
         </tr>
     @endforeach

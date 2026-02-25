@@ -47,20 +47,13 @@ class VisibilityService
         );
     }
 
-    public static function itemVisible(User $user, $item)
+    public static function itemVisible(User $user, Item $item)
     {
         $allowedUsers = self::allowedUserIds($user);
         $allowedTeams = self::allowedTeamIds($user);
 
-        if ($allowedUsers->contains($item->document->owner_id)) {
-            return true;
-        }
-
-        if ($item->category && $allowedTeams->contains($item->category->team_id)) {
-            return true;
-        }
-
-        return false;
+        return $allowedUsers->contains($item->category->owner_id)
+            || $allowedTeams->contains($item->category->team_id);
     }
 
     public static function documentVisible(User $user, $document)
@@ -87,44 +80,6 @@ class VisibilityService
 
     public static function categoryVisible(User $user, $category)
     {
-logger()->info('VisibilityService.categoryVisible', [$user, $category]);
-/*        $allowedUsers = self::allowedUserIds($user);
-        $allowedTeams = self::allowedTeamIds($user);
-*/
-        // A: user or principal owns the category
-/*        if ($allowedUsers->contains($category->owner_id)) {
-            return true;
-        }
-*/
-/*        // B: category belongs to an allowed team
-        if ($allowedTeams->contains($category->team_id)) {
-            return true;
-        }
-*/
-/*        // C: any ancestor category is visible
-        //    (we must use raw DB queries to avoid recursion)
-        $parentId = $category->parent_id;
-
-        while ($parentId !== null) {
-            $parent = \DB::table('categories')->where('id', $parentId)->first();
-
-            if (! $parent) {
-                break;
-            }
-
-            // Parent owned by allowed user?
-            if ($allowedUsers->contains($parent->owner_id)) {
-                return true;
-            }
-
-            // Parent belongs to allowed team?
-            if ($allowedTeams->contains($parent->team_id)) {
-                return true;
-            }
-
-            // Continue walking up the tree
-            $parentId = $parent->parent_id;
-        }*/
 
         return false;
     }

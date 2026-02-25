@@ -111,8 +111,10 @@
 
                     @can('update', $membership)
                         <div class="d-flex gap-2">
-                            <a href="{{ route('teams.memberships.edit', [$team, $membership]) }}"
-                               class="btn btn-sm btn-primary">
+                            <a id="edit-membership-{{ $member->id }}"
+                               href="{{ route('teams.memberships.edit', [$team, $membership]) }}"
+                               class="btn btn-sm btn-primary"
+                               >
                                 Edit
                             </a>
                         </div>

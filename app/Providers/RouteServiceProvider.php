@@ -6,5 +6,5 @@ use Illuminate\Support\ServiceProvider;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    public const HOME = '/categories';
+    public const HOME = '/';
 }

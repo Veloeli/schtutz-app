@@ -116,13 +116,15 @@
                                                         </div>
 
                                                         <div class="text-muted small">
-                                                            <span class="badge bg-secondary">
-                                                                @if($item->category->team_id)
+                                                            @if($item->category->team_id)
+                                                                <span class="badge bg-secondary">
                                                                     {{ $item->category->team->name }}
-                                                                @else
+                                                                </span>
+                                                            @elseif($doc->owner_id !== auth()->id())
+                                                                <span class="badge bg-secondary">
                                                                     {{ $doc->owner->name }}
-                                                                @endif
-                                                            </span>
+                                                                </span>
+                                                            @endif
                                                             {{ $item->category->name }}
                                                         </div>
                                                     </div>

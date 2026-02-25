@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Services\VisibilityService;
 use Illuminate\Auth\Access\Response;
 
 class TeamPolicy
@@ -35,16 +36,17 @@ class TeamPolicy
 
     public function update(User $user, Team $team)
     {
-        return VisibilityService::teamVisible($user, $team);
-/*        return $team->owner_id === $user->id
-            || $team->members->contains($user->id);*/
+        return $user->id === $team->owner_id 
+            || $user->isDeputyFor($team->owner_id)
+            || $user->teams->contains($team);
     }
 
     public function delete(User $user, Team $team)
     {
-        return VisibilityService::teamVisible($user, $team);
-/*        return $team->owner_id === $user->id
-            || $team->members->contains($user->id);*/
+        return $team->members->count() === 0 && (
+            $user->id === $team->owner_id 
+            || $user->isDeputyFor($team->owner_id)
+            || $user->teams->contains($team));
     }
 
     /**
