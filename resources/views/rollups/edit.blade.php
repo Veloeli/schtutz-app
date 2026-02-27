@@ -21,15 +21,33 @@
                    required>
         </div>
 
-        {{-- CODE (only for non-root nodes) --}}
         @if ($rollup->parent_id)
+        {{-- CODE (only for non-root nodes) --}}
         <div class="mb-3">
             <label class="form-label">Code</label>
             <input type="text"
                    name="code"
                    class="form-control"
-                   value="{{ old('code', $rollup->code) }}"
-                   required>
+                   value="{{ old('code', $rollup->code) }}">
+        </div>
+
+        <input type="text"
+               name="user_id"
+               class="form-control"
+               value="{{ old('user_id', $rollup->user_id) }}"
+               hidden>
+        @else
+        {{-- OWNER (only for root nodes) --}}
+        <div class="mb-3">
+            <label class="form-label">Owner</label>
+            <select name="user_id" class="form-select" required>
+                @foreach($assignedUsers as $user)
+                    <option value="{{ $user->id }}"
+                        {{ old('user_id', $rollup->user_id) == $user->id ? 'selected' : '' }}>
+                        {{ $user->name }} ({{ $user->email }})
+                    </option>
+                @endforeach
+            </select>
         </div>
         @endif
 
@@ -38,7 +56,14 @@
 
             <!-- Left side: Update + Cancel -->
             <div class="d-flex gap-2">
+                @can('update', $rollup)
                 <button type="submit" class="btn btn-primary">Update</button>
+                @endcan
+
+                <a href="{{ route('rollups.create', ['parent_id' => $rollup->id]) }}"
+                   class="btn btn-primary">
+                    Add Child
+                </a>
 
                 <a href="{{ route('rollups.index') }}"
                    class="btn btn-secondary">
@@ -47,12 +72,14 @@
             </div>
 
             <!-- Right side: Delete (opens modal) -->
+            @can('delete', $rollup)
             <button type="button"
                     class="btn btn-danger"
                     data-bs-toggle="modal"
                     data-bs-target="#deleteModal">
                 Delete
             </button>
+            @endcan
         </div>
     </form>
     <br>
@@ -74,12 +101,14 @@
                         </span>
 
                         {{-- DETACH USER FORM --}}
+                        @can('detachUser', [$rollup, $user])
                         <form action="{{ route('rollups.detachUser', [$rollup, $user]) }}"
                               method="POST">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm btn-danger">Remove</button>
                         </form>
+                        @endcan
                     </li>
                 @endforeach
             </ul>
@@ -110,11 +139,11 @@
         {{-- CATEGORY LIST --}}
         <h3 class="mt-4">Assigned Categories</h3>
 
-        @if($assigned->isEmpty())
+        @if($assignedCategories->isEmpty())
             <p class="text-muted">No categories assigned to this node.</p>
         @else
             <ul class="list-group mb-3">
-                @foreach($assigned as $category)
+                @foreach($assignedCategories as $category)
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>
                             {{ $category->code }} — {{ $category->name }}
@@ -143,7 +172,7 @@
 
         {{-- ADD CATEGORY --}}
         <br>
-        @if($available->isEmpty())
+        @if($availableCategories->isEmpty())
             <p class="text-muted">All categories are assigned in this rollup hierarchy.</p>
         @else
             <form action="{{ route('rollups.attachCategory', $rollup) }}" method="POST">
@@ -154,7 +183,7 @@
 
                     <div class="d-flex gap-2">
                         <select name="category_id" class="form-select flex-grow-1">
-                            @foreach($available as $category)
+                            @foreach($availableCategories as $category)
                                 <option value="{{ $category->id }}">
                                     {{ $category->code }} — {{ $category->name }}
                                 @if($category->team_id)

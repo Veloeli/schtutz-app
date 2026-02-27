@@ -38,7 +38,7 @@ class RollupService
     | Create a child node
     |--------------------------------------------------------------------------
     */
-    public function createChild(Rollup $parent, array $data): Rollup
+    public function createChild(Rollup $parent, array $data, User $creator): Rollup
     {
         if (!$parent->exists) {
             throw ValidationException::withMessages([
@@ -50,7 +50,7 @@ class RollupService
             'name'      => $data['name'],
             'code'      => $data['code'] ?? null,
             'parent_id' => $parent->id,
-            'user_id'   => $parent->user_id, // inherit informational creator
+            'user_id'   => $parent->user_id // all nodes assigned to same user, even if someone else creates node
         ]);
     }
 
@@ -62,8 +62,9 @@ class RollupService
     public function update(Rollup $rollup, array $data): Rollup
     {
         $rollup->update([
-            'name' => $data['name'],
-            'code' => $data['code'] ?? null,
+            'name'    => $data['name'],
+            'code'    => $data['code'] ?? null,
+            'user_id' => $data['user_id'],
         ]);
 
         return $rollup;
@@ -74,9 +75,29 @@ class RollupService
     | Delete a rollup node
     |--------------------------------------------------------------------------
     */
-    public function delete(Rollup $rollup): void
+    public function delete(Rollup $rollup)
     {
-        $rollup->delete();
+        DB::transaction(function () use ($rollup) {
+            
+            // 1. Remove as user preferred hierarchy
+            User::where('preferred_root_id', $rollup->id)->update([
+                'preferred_root_id' => null,
+            ]);
+
+            // 2. Remove assigned users (without policy) - usually only the owner
+            $rollup->users()->detach();
+
+            // 2. Remove assigned categories (if any) - usually nothing
+            $rollup->categories()->detach();
+
+            // 3. Remove children (recursive) - usually nothing
+            foreach ($rollup->children as $child) {
+                $this->delete($child);
+            }
+
+            // 4. Delete hierarchy
+            $rollup->delete();
+        });
     }
 
     /*
@@ -97,17 +118,11 @@ class RollupService
 
     /*
     |--------------------------------------------------------------------------
-    | Attach a category to a leaf node
+    | Attach a category to a node
     |--------------------------------------------------------------------------
     */
     public function attachCategory(Rollup $rollup, Category $category): void
     {
-        if (!$rollup->isLeaf()) {
-            throw ValidationException::withMessages([
-                'rollup_id' => 'Only leaf nodes can have categories attached.',
-            ]);
-        }
-
         $rollup->categories()->syncWithoutDetaching($category->id);
     }
 }

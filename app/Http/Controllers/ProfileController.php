@@ -35,7 +35,7 @@ class ProfileController extends Controller
         $validated = $request->validated();
 
         $request->validate([
-            'preferred_root_id' => ['nullable', 'exists:rollup,id'],
+            'preferred_root_id' => ['nullable', 'exists:rollups,id'],
         ]);
 
         $user = $request->user();

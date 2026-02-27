@@ -40,6 +40,11 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'deputies', 'deputy_user_id', 'user_id');
     }
 
+    public function isDeputyForUser($userId)
+    {
+        return $this->isDeputyFor()->where('users.id', $userId)->exists();
+    }
+
     public function ownedCategories()
     {
         return $this->hasMany(Category::class, 'user_id');

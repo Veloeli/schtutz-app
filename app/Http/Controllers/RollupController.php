@@ -63,7 +63,7 @@ class RollupController extends Controller
         $parent = null;
 
         if ($request->filled('parent_id')) {
-            $parent = Rollup::withoutGlobalScopes()->findOrFail($request->parent_id);
+            $parent = Rollup::findOrFail($request->parent_id);
         }
 
         return view('rollups.create', compact('parent'));
@@ -95,7 +95,7 @@ class RollupController extends Controller
             'code' => 'nullable|string',
         ]);
 
-        $this->service->createChild($parent, $data);
+        $this->service->createChild($parent, $data, $request->user());
 
         return redirect()
             ->route('rollups.index')
@@ -109,38 +109,36 @@ class RollupController extends Controller
     */
     public function edit(Rollup $rollup)
     {
-        $assigned = $rollup->categories()->get();
+        $assignedCategories = $rollup->categories()->get();
         
+        // 1. Find the root
+        $root = Rollup::rootOf($rollup);
+
         // Assigned users (from pivot rollup_user) 
-        $assignedUsers = $rollup->users()->get();
+        $assignedUsers = $root->users()->get();
 
-        // 1. Load root and full subtree
-        $rootId = session('root_id');
-        $root = Rollup::with('childrenRecursive')->findOrFail($rootId);
-
-        // 2. Collect all rollup IDs in this tree
-        $allRollupIds = collect([$root->id]);
-//        $this->collectDescendants($root, $allRollupIds);
+        // 2. Get all descendant IDs including root
         $allRollupIds = Rollup::descendantIdsOf([$root]);
 
-        // 3. Categories assigned anywhere in this tree
+        // 3. Categories already assigned anywhere in this tree
         $assignedInTree = Category::whereHas('rollups', function ($q) use ($allRollupIds) {
-            $q->whereIn('rollup_id', $allRollupIds);
+            $q->whereIn('rollups.id', $allRollupIds);
         })->pluck('id');
 
-        // 4. Available categories = not used anywhere in this tree
-        $available = Category::whereNotIn('id', $assignedInTree)
+        // 4. Categories not yet assigned
+        $availableCategories = Category::whereNotIn('id', $assignedInTree)
             ->orderBy('code')
             ->get();
 
-        return view('rollups.edit', compact('rollup', 'assigned', 'available', 'assignedUsers'));
+        return view('rollups.edit', compact('rollup', 'assignedCategories', 'availableCategories', 'assignedUsers'));
     }
 
     public function update(Request $request, Rollup $rollup)
     {
         $data = $request->validate([
-            'name' => 'required|string',
-            'code' => 'nullable|string',
+            'name'    => 'required|string',
+            'code'    => 'nullable|string',
+            'user_id' => ['required', 'exists:users,id'], 
         ]);
 
         $this->service->update($rollup, $data);
@@ -180,7 +178,7 @@ class RollupController extends Controller
     public function attachUser(Request $request)
     {
         $request->validate([
-            'rollup_id' => 'required|exists:rollup,id',
+            'rollup_id' => 'required|exists:rollups,id',
             'email' => 'required|email'
         ]);
 
@@ -204,13 +202,11 @@ class RollupController extends Controller
 
     public function detachUser(Rollup $rollup, User $user)
     {
-        // Only detach if the relation exists
-        if ($rollup->users()->where('user_id', $user->id)->exists()) {
-            $rollup->users()->detach($user->id);
-            return back()->with('success', 'User removed.');
-        }
+        $this->authorize('detachUser', [$rollup, $user]);
 
-        return back()->with('error', 'User was not assigned.');
+        $rollup->users()->detach($user->id);
+
+        return back();
     }
 
     /*

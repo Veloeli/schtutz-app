@@ -36,55 +36,6 @@ class TeamController extends Controller
         ]);
     }
 
-/*    public function index()
-    {
-        $user = auth()->user();
-        $userId = $user->id;
-
-        // Teams the user owns or belongs to
-        $teams = Team::with(['members:id,name,email'])
-            ->withCount('members')
-            ->withSum('memberships as sharing_ratio_sum', 'sharing_ratio')
-            ->where(function ($query) use ($userId) {
-                $query->where('owner_id', $userId)
-                      ->orWhereHas('members', function ($q) use ($userId) {
-                          $q->where('users.id', $userId);
-                      });
-            })
-            ->orderBy('name')
-            ->get();
-
-        // Membership rows for the logged-in user
-        $memberships = $user->teamMemberships()->with('team')
-            ->with([
-                'team' => function ($q) {
-                    $q->withSum('memberships as sharing_ratio_sum', 'sharing_ratio');
-                }
-            ])
-            ->orderBy('member_from', 'desc')
-            ->get();
-
-        return view('teams.index', compact('teams', 'memberships'));
-    }
-*/
-/*    public function index()
-    {
-        $userId = auth()->id();
-
-        $teams = Team::with(['members:id,name,email'])
-            ->withCount('members')
-            ->where(function ($query) use ($userId) {
-                $query->where('owner_id', $userId)
-                      ->orWhereHas('members', function ($q) use ($userId) {
-                          $q->where('users.id', $userId);
-                      });
-            })
-            ->orderBy('name')
-            ->get();
-
-        return view('teams.index', compact('teams'));
-    }
-*/
     public function create()
     {
         return view('teams.create');

@@ -8,8 +8,6 @@ use App\Services\VisibilityService;
 
 class Rollup extends Model
 {
-    protected $table = 'rollup';
-
     protected $fillable = [
         'name',
         'parent_id',
@@ -54,22 +52,35 @@ class Rollup extends Model
         });
     }
 
-    public static function descendantIdsOf(array $rootIds): array
+    public static function rootOf(Rollup $node): Rollup
     {
-        $all = $rootIds;
-        $queue = $rootIds;
+        while ($node->parent_id !== null) {
+            $node = $node->parent;
+        }
+        return $node;
+    }
+
+    public static function descendantIdsOf(array $roots): array
+    {
+        // Normalize: convert Rollup models to IDs
+        $queue = [];
+        foreach ($roots as $r) {
+            $queue[] = $r instanceof Rollup ? $r->id : $r;
+        }
+
+        $all = $queue;
 
         while (!empty($queue)) {
             $children = Rollup::withoutGlobalScopes()
                 ->whereIn('parent_id', $queue)
                 ->pluck('id')
-                ->toArray();
+                ->all();
 
-            $queue = $children;
             $all = array_merge($all, $children);
+            $queue = $children;
         }
 
-        return array_unique($all);
+        return array_values(array_unique($all));
     }
 
     /*

@@ -42,12 +42,16 @@
         </div>
         @endif
 
-        <button class="btn btn-primary">Save</button>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary">Save</button>
 
-        <a href="{{ route('rollups.index') }}"
-           class="btn btn-secondary">
-            Cancel
-        </a>
+                <a href="{{ route('rollups.index') }}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </div>
     </form>
 </div>
 @endsection

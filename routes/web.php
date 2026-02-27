@@ -74,7 +74,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{rollup}', [RollupController::class, 'destroy'])->name('destroy');
 
         Route::post('/{rollup}/users', [RollupController::class, 'attachUser'])->name('attachUser');
-        Route::delete('/{rollup}/categories/{user}', [RollupController::class, 'detachUser'])->name('detachUser');
+        Route::delete('/{rollup}/users/{user}', [RollupController::class, 'detachUser'])
+            ->middleware('can:detachUser,rollup,user')
+            ->name('detachUser');
 
         Route::post('/{rollup}/categories', [RollupController::class, 'attachCategory'])->name('attachCategory');
         Route::delete('/{rollup}/categories/{category}', [RollupController::class, 'detachCategory'])->name('detachCategory');
