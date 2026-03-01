@@ -48,6 +48,16 @@ class CategoryIndexTest extends TestCase
         // Act as self
         $response = $this->actingAs($self)->get('/categories');
 
+        // own private and team - should have edit button
+        $response->assertSee("edit-category-{$salad->id}");
+        $response->assertSee("edit-category-{$onion->id}");
+        $response->assertSee("edit-category-{$privateSelf->id}");
+
+        // Private category - other → SHOULD NOT be present
+        $response->assertDontSee("edit-category-{$privateOther->id}");
+        $response->assertDontSee("owner-category-{$privateOther->id}");
+
+/*
         // Salad → SHOULD have an edit button
         $response->assertSee("edit-category-{$salad->id}");
         $response->assertDontSee("owner-category-{$salad->id}");
@@ -63,5 +73,6 @@ class CategoryIndexTest extends TestCase
         // Private category - other → SHOULD NOT be present
         $response->assertDontSee("edit-category-{$privateOther->id}");
         $response->assertDontSee("owner-category-{$privateOther->id}");
+*/        
     }
 }

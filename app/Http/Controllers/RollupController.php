@@ -78,8 +78,9 @@ class RollupController extends Controller
 
         $rollup = $this->service->createRoot($data, $request->user());
 
+        session(['root_id' => $rollup->id]);
         return redirect()
-            ->route('rollups.index', ['root_id' => $rollup->id])
+            ->route('rollups.index')
             ->with('success', 'Rollup created.');
     }
 

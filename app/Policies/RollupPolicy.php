@@ -42,7 +42,6 @@ class RollupPolicy
     public function delete(User $user, Rollup $rollup)
     {
         return ($user->id === $rollup->user_id || Rollup::rootOf($rollup)->users->contains($user)) &&
-            Rollup::rootOf($rollup)->users->count() === 1 &&
             $rollup->children->count() === 0 && 
             $rollup->categories()->withoutGlobalScopes()->count() === 0;
     }
