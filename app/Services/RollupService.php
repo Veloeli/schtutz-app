@@ -23,11 +23,9 @@ class RollupService
                 'name'      => $data['name'],
                 'code'      => $data['code'] ?? null,
                 'parent_id' => null,
-                'user_id'   => $creator->id, // informational
+                'user_id'   => $creator->id,
+                'team_id'   => $data['team_id'] ?? null,
             ]);
-
-            // attach creator as a user with access
-            $rollup->users()->attach($creator->id);
 
             return $rollup;
         });
@@ -65,6 +63,7 @@ class RollupService
             'name'    => $data['name'],
             'code'    => $data['code'] ?? null,
             'user_id' => $data['user_id'],
+            'team_id' => $data['team_id'] ?? null,
         ]);
 
         return $rollup;
@@ -84,9 +83,6 @@ class RollupService
                 'preferred_root_id' => null,
             ]);
 
-            // 2. Remove assigned users (without policy) - usually only the owner
-            $rollup->users()->detach();
-
             // 2. Remove assigned categories (if any) - usually nothing
             $rollup->categories()->detach();
 
@@ -98,22 +94,6 @@ class RollupService
             // 4. Delete hierarchy
             $rollup->delete();
         });
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Attach a user to a root node
-    |--------------------------------------------------------------------------
-    */
-    public function attachUser(Rollup $rollup, User $user): void
-    {
-        if (!$rollup->isRoot()) {
-            throw ValidationException::withMessages([
-                'rollup_id' => 'Only root nodes can have users attached.',
-            ]);
-        }
-
-        $rollup->users()->syncWithoutDetaching($user->id);
     }
 
     /*

@@ -14,39 +14,51 @@
             <input type="text" class="form-control" value="{{ $membership->user->name }} ({{ $membership->user->email }})" disabled>
         </div>
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
+        @if($team->has_common_financials)
+            <div class="mb-3">
+                <label class="form-label">Sharing Ratio</label>
+                <input type="number" name="sharing_ratio" class="form-control"
+                       value="{{ old('sharing_ratio', $membership->sharing_ratio) }}"
+                       min="0" max="100" step="0.01">
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label">Reveal Private</label>
-                <select name="reveal_private" class="form-select">
-                    <option value="0" @selected(!$membership->reveal_private)>No</option>
-                    <option value="1" @selected($membership->reveal_private)>Yes</option>
+                <select name="reveal_private" class="form-select" id="reveal_private">
+                    <option value="0" @selected(old('reveal_private', $membership->reveal_private) == 0)>No</option>
+                    <option value="1" @selected(old('reveal_private', $membership->reveal_private) == 1)>Yes</option>
                 </select>
             </div>
 
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Sharing Ratio</label>
-                <input type="number" name="sharing_ratio" class="form-control"
-                       value="{{ old('sharing_ratio', $membership->sharing_ratio) }}" step="any">
+            <div class="mb-3">
+                <label class="form-label">Clearing Account</label>
+                <select name="clearing_account" class="form-select">
+                    <option value="">— Kein Clearing Account —</option>
+                    @foreach($clearingAccounts as $cat)
+                        <option value="{{ $cat->id }}"
+                            @selected(old('clearing_account', $membership->clearing_account) == $cat->id)>
+                            {{ $cat->code }} — {{ $cat->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Clearing Account</label>
-            <input type="text" name="clearing_account" class="form-control"
-                   value="{{ old('clearing_account', $membership->clearing_account) }}">
-        </div>
+        @endif
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="form-label">Member From</label>
-                <input type="date" name="member_from" class="form-control"
-                       value="{{ old('member_from', $membership->member_from) }}">
+                <label class="form-label">Member from</label>
+                <input type="date"
+                       name="member_from"
+                       class="form-control"
+                       value="{{ old('member_from', optional($membership->member_from)->format('Y-m-d')) }}">
             </div>
 
             <div class="col-md-6 mb-3">
-                <label class="form-label">Member To</label>
-                <input type="date" name="member_to" class="form-control"
-                       value="{{ old('member_to', $membership->member_to) }}">
+                <label class="form-label">Member until</label>
+                <input type="date" 
+                       name="member_to" 
+                       class="form-control"
+                       value="{{ old('member_to', optional($membership->member_to)->format('Y-m-d')) }}">
             </div>
         </div>
 

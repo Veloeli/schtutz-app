@@ -49,21 +49,51 @@
                 <div>
                     <strong>{{ $membership->team->name  }}</strong><br>
                     <small class="text-muted">
-                        Reveal Private: <strong>{{ $membership->reveal_private ? 'Yes' : 'No' }}</strong>
+                        The team can have common
+                        @if($membership->team->has_common_financials)
+                            • <strong>Financials</strong> 
+                        @endif
 
-                        • Sharing Ratio: <strong>{{ $membership->sharing_ratio + 0 }} of {{ $membership->team->sharing_ratio_sum + 0}}</strong>
+                        @if($membership->team->has_common_reporting)
+                            • <strong>Reporting</strong> 
+                        @endif
 
-                        @if($membership->clearing_account !== null) 
-                            • Clearing: <strong>{{ $membership->clearing_account }}</strong>
-                        @endif                    
+                        @if($membership->team->has_common_securities)
+                            • <strong>Securities</strong> 
+                        @endif
 
-                        @if($membership->member_from !== null) 
-                            • Member from: <strong>{{ $membership->member_from }}</strong>
-                        @endif                    
+                        @if($membership->team->has_common_financials)
+                            <br>
+                            Your private financials are <strong>{{ $membership->reveal_private ? 'visible' : 'not visible' }}</strong> to other team members
+                            • You pick up <strong>{{ $membership->sharing_ratio + 0 }} of {{ $membership->team->sharing_ratio_sum + 0}}</strong> shares of each team category
+                            @if($membership->clearingAccount)
+                                • Your clearing account is <strong>{{ $membership->clearingAccount->name }}</strong>
+                            @endif
+                        @endif
 
-                        @if($membership->member_to !== null) 
-                            • Member until: <strong>{{ $membership->member_to }}</strong>
-                        @endif                    
+                        @if(!(($membership->team->has_common_financials) || ($membership->team->has_common_reporting) || ($membership->team->has_common_securities)))
+                            • <strong>No capabilities activated</strong>
+                        @endif
+                        @if($membership->team->valid_from || $membership->team->valid_to)
+                        <br>
+                            The team exists
+                        @endif
+                        @if($membership->team->valid_from)
+                            from <strong>{{ $membership->team->valid_from->format('d.m.Y') }}</strong> 
+                        @endif
+                        @if($membership->team->valid_until)
+                            until <strong>{{ $membership->team->valid_until->format('d.m.Y') }}</strong> 
+                        @endif
+                        @if($membership->member_from || $membership->member_to)
+                        <br>
+                            Your membership is active
+                        @endif
+                        @if($membership->member_from)
+                            from <strong>{{ $membership->member_from->format('d.m.Y') }}</strong> 
+                        @endif
+                        @if($membership->member_to)
+                            until <strong>{{ $membership->member_to->format('d.m.Y') }}</strong> 
+                        @endif
                     </small>
 
                     {{-- MEMBER BADGES --}}

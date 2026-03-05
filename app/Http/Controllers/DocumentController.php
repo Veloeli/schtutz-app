@@ -23,24 +23,16 @@ class DocumentController extends Controller
 
         $user = auth()->user();
 
-        // A) Filter documents using the service (which uses the policy)
+        // Filter documents using the service (which uses the policy)
         $documents = $this->documents->visibleFor($user, $month);
 
-        // B) Keep your dropdown logic exactly as before
-        $representedUsers = User::whereHas('deputies', function ($q) use ($user) {
-            $q->where('deputy_user_id', $user->id);
-        })->get();
+        $teams = $user->teamsWithFinancials()->get();
 
-        $userIds = collect([$user->id])
-            ->merge($representedUsers->pluck('id'))
-            ->unique();
-
-        $teams = Team::whereHas('memberships', function ($q) use ($userIds) {
-            $q->whereIn('user_id', $userIds);
-        })->get();
-
-        $members = User::whereHas('teams', function ($q) use ($teams) {
-            $q->whereIn('team_id', $teams->pluck('id'));
+        $members = User::whereIn('id', function ($q) use ($teams) {
+            $q->select('user_id')
+              ->from('team_user')
+              ->whereIn('team_id', $teams->pluck('id'))
+              ->distinct();
         })->get();
 
         return view('documents.index', [

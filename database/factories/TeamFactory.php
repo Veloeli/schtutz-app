@@ -17,4 +17,11 @@ class TeamFactory extends Factory
             'name' => $this->faker->company . ' Team',
         ];
     }
+
+    public function forUser(User $user)
+    {
+        return $this->state(fn () => [
+            'owner_id' => $user->id,
+        ]);
+    }
 }

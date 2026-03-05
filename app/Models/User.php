@@ -30,21 +30,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function deputies()
-    {
-        return $this->belongsToMany(User::class, 'deputies', 'user_id', 'deputy_user_id');
-    }
-
-    public function isDeputyFor()
-    {
-        return $this->belongsToMany(User::class, 'deputies', 'deputy_user_id', 'user_id');
-    }
-
-    public function isDeputyForUser($userId)
-    {
-        return $this->isDeputyFor()->where('users.id', $userId)->exists();
-    }
-
     public function ownedCategories()
     {
         return $this->hasMany(Category::class, 'user_id');
@@ -76,6 +61,16 @@ class User extends Authenticatable
         return $this->belongsToMany(Team::class, 'team_user')
             ->withPivot(['reveal_private','sharing_ratio'])
             ->withTimestamps();
+    }
+
+    public function teamsWithFinancials()
+    {
+        return $this->teams()->where('teams.has_common_financials', true);
+    }
+
+    public function teamsWithReporting()
+    {
+        return $this->teams()->where('teams.has_common_reporting', true);
     }
 
     public function activeTeams()

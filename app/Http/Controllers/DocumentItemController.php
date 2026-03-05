@@ -6,9 +6,17 @@ use App\Models\Document;
 use App\Models\Category;
 use App\Models\Item;
 use Illuminate\Http\Request;
+use App\Services\CategoryService;
 
 class DocumentItemController extends Controller
 {
+    protected CategoryService $categories;
+
+    public function __construct(CategoryService $categories)
+    {
+        $this->categories = $categories;
+    }
+
     public function index(Document $document)
     {
         return view('documents.items.index', [
@@ -22,9 +30,8 @@ class DocumentItemController extends Controller
         $user = auth()->user();
 
         // Load categories visible to the user
-        $categories = app(\App\Services\CategoryService::class)
-            ->getCategoriesForUser($user)
-            ->sortBy('full_path');
+        $categories = $this->categories->allVisible($user);
+//            ->sortBy('full_path');
 
         return view('documents.items.create', [
             'document' => $document,
@@ -51,9 +58,8 @@ class DocumentItemController extends Controller
         $user = auth()->user();
 
         // Load categories visible to the user
-        $categories = app(\App\Services\CategoryService::class)
-            ->getCategoriesForUser($user)
-            ->sortBy('full_path');
+        $categories = $this->categories->allVisible($user);
+//            ->sortBy('full_path');
 
         return view('documents.items.edit', [
             'document' => $document,

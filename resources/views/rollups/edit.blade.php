@@ -41,7 +41,7 @@
         <div class="mb-3">
             <label class="form-label">Owner</label>
             <select name="user_id" class="form-select" required>
-                @foreach($assignedUsers as $user)
+                @foreach($possibleOwners as $user)
                     <option value="{{ $user->id }}"
                         {{ old('user_id', $rollup->user_id) == $user->id ? 'selected' : '' }}>
                         {{ $user->name }} ({{ $user->email }})
@@ -49,6 +49,21 @@
                 @endforeach
             </select>
         </div>
+
+        <!-- Team -->
+        <div class="mb-4">
+            <label class="form-label">Team</label>
+            <select name="team_id" class="form-select">
+                <option value="">— No team (private) —</option>
+
+                @foreach ($teams as $team)
+                    <option value="{{ $team->id }}" @selected($rollup->team_id == $team->id)>
+                        {{ $team->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
         @endif
 
         {{-- ACTIONS --}}
@@ -84,56 +99,7 @@
     </form>
     <br>
 
-    @if (!$rollup->parent_id)
-    {{-- TOP NODE : ASSIGN USERS --}}
-
-        {{-- USER LIST --}}
-        <h3 class="mt-4">Assigned Users</h3>
-
-        @if($assignedUsers->isEmpty())
-            <p class="text-muted">Hierarchy not shared with anyone.</p>
-        @else
-            <ul class="list-group mb-3">
-                @foreach($assignedUsers as $user)
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>
-                            {{ $user->name }} — {{ $user->email }}
-                        </span>
-
-                        {{-- DETACH USER FORM --}}
-                        @can('detachUser', [$rollup, $user])
-                        <form action="{{ route('rollups.detachUser', [$rollup, $user]) }}"
-                              method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-danger">Remove</button>
-                        </form>
-                        @endcan
-                    </li>
-                @endforeach
-            </ul>
-        @endif
-
-        {{-- ADD USER --}}
-        <form action="{{ route('rollups.attachUser', $rollup) }}" method="POST">
-            @csrf
-            <div class="mb-3">
-
-                <div class="d-flex gap-2">
-                    <input type="hidden" name="rollup_id" value="{{ $rollup->id }}">
-
-                    <input type="email"
-                           name="email"
-                           class="form-control"
-                           placeholder="User email"
-                           required>
-
-                    <button class="btn btn-primary">Add</button>
-                </div>
-            </div>
-        </form>
-
-    @else
+    @if ($rollup->parent_id)
     {{-- BRANCH NODE : ASSIGN CATEGORIES --}}
 
         {{-- CATEGORY LIST --}}

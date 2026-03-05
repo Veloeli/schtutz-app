@@ -15,9 +15,12 @@ class TeamUser extends Model
         'member_from',
         'member_to',
         'reveal_private',
-        'user_apply_date',
-        'team_accept_date',
         'clearing_account',
+    ];
+
+    protected $casts = [
+        'member_from' => 'date',
+        'member_to' => 'date',
     ];
 
     public function team()
@@ -29,4 +32,10 @@ class TeamUser extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    public function clearingAccount()
+    {
+        return $this->belongsTo(Category::class, 'clearing_account');
+    }
+    
 }

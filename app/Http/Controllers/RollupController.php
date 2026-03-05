@@ -108,30 +108,49 @@ class RollupController extends Controller
     | Update
     |--------------------------------------------------------------------------
     */
+
     public function edit(Rollup $rollup)
     {
-        $assignedCategories = $rollup->categories()->get();
-        
-        // 1. Find the root
+        $this->authorize('update', $rollup);
+
+        $user = auth()->user();
+
+        // 1. Root bestimmen
         $root = Rollup::rootOf($rollup);
 
-        // Assigned users (from pivot rollup_user) 
-        $assignedUsers = $root->users()->get();
+        // 2. Mögliche Owner bestimmen
+        //    - Wenn Root ein Team hat → Team-Mitglieder
+        //    - Wenn kein Team → nur der Owner selbst
+        $possibleOwners = $root->team_id
+            ? $root->users()->orderBy('name')->get()
+            : collect([$root->owner])->filter();
+            
+        // 3. Kategorien direkt auf diesem Rollup
+        $assignedCategories = $rollup->categories()->get();
 
-        // 2. Get all descendant IDs including root
-        $allRollupIds = Rollup::descendantIdsOf([$root]);
+        // 4. Alle Rollup-IDs im Baum
+        $allRollupIds = Rollup::descendantIdsOf([$root->id]);
 
-        // 3. Categories already assigned anywhere in this tree
+        // 5. Kategorien, die irgendwo im Baum bereits zugewiesen sind
         $assignedInTree = Category::whereHas('rollups', function ($q) use ($allRollupIds) {
             $q->whereIn('rollups.id', $allRollupIds);
         })->pluck('id');
 
-        // 4. Categories not yet assigned
+        // 6. Kategorien, die noch frei sind
         $availableCategories = Category::whereNotIn('id', $assignedInTree)
             ->orderBy('code')
             ->get();
 
-        return view('rollups.edit', compact('rollup', 'assignedCategories', 'availableCategories', 'assignedUsers'));
+        // 7. Teams für das Team-Dropdown
+        $teams = $user->teamsWithReporting;
+
+        return view('rollups.edit', compact(
+            'rollup',
+            'teams',
+            'possibleOwners',
+            'assignedCategories',
+            'availableCategories'
+        ));
     }
 
     public function update(Request $request, Rollup $rollup)
@@ -140,6 +159,7 @@ class RollupController extends Controller
             'name'    => 'required|string',
             'code'    => 'nullable|string',
             'user_id' => ['required', 'exists:users,id'], 
+            'team_id' => 'nullable|exists:teams,id',
         ]);
 
         $this->service->update($rollup, $data);
@@ -169,45 +189,6 @@ class RollupController extends Controller
         return redirect()
             ->route('rollups.index', ['root_id' => $rootId])
             ->with('success', 'Rollup deleted.');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Attach user (root only)
-    |--------------------------------------------------------------------------
-    */
-    public function attachUser(Request $request)
-    {
-        $request->validate([
-            'rollup_id' => 'required|exists:rollups,id',
-            'email' => 'required|email'
-        ]);
-
-        $rollup = Rollup::findOrFail($request->rollup_id);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return back()->with('error', 'User not found.');
-        }
-
-        // Avoid duplicates
-        if ($rollup->users()->where('user_id', $user->id)->exists()) {
-            return back()->with('error', 'User already assigned.');
-        }
-
-        $rollup->users()->attach($user->id);
-
-        return back()->with('success', 'User added.');
-    }
-
-    public function detachUser(Rollup $rollup, User $user)
-    {
-        $this->authorize('detachUser', [$rollup, $user]);
-
-        $rollup->users()->detach($user->id);
-
-        return back();
     }
 
     /*

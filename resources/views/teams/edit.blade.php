@@ -13,32 +13,78 @@
             <fieldset disabled>
         @endcannot
 
-        <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input type="text" name="name" class="form-control"
-                   value="{{ old('name', $team->name) }}" required>
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" class="form-control"
+                       value="{{ old('name', $team->name) }}" required>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Owner</label>
+                @php
+                    // Always include the owner
+                    $owner = $team->owner;
+
+                    // Combine owner + members, remove duplicates by ID
+                    $selectableUsers = collect([$owner])
+                        ->merge($team->members)
+                        ->unique('id');
+                @endphp
+
+                <select name="owner_id" class="form-select" required>
+                    @foreach($selectableUsers as $user)
+                        <option value="{{ $user->id }}"
+                            {{ old('owner_id', $team->owner_id) == $user->id ? 'selected' : '' }}>
+                            {{ $user->name }} ({{ $user->email }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Owner</label>
-            @php
-                // Always include the owner
-                $owner = $team->owner;
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Team can have common financials (categories)</label>
+                <select name="has_common_financials" class="form-select">
+                    <option value="0" @selected(!$team->has_common_financials)>No</option>
+                    <option value="1" @selected($team->has_common_financials)>Yes</option>
+                </select>
+            </div>
 
-                // Combine owner + members, remove duplicates by ID
-                $selectableUsers = collect([$owner])
-                    ->merge($team->members)
-                    ->unique('id');
-            @endphp
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Team can use common reporting (rollups)</label>
+                <select name="has_common_reporting" class="form-select">
+                    <option value="0" @selected(!$team->has_common_reporting)>No</option>
+                    <option value="1" @selected($team->has_common_reporting)>Yes</option>
+                </select>
+            </div>
 
-            <select name="owner_id" class="form-select" required>
-                @foreach($selectableUsers as $user)
-                    <option value="{{ $user->id }}"
-                        {{ old('owner_id', $team->owner_id) == $user->id ? 'selected' : '' }}>
-                        {{ $user->name }} ({{ $user->email }})
-                    </option>
-                @endforeach
-            </select>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Team can use common securities</label>
+                <select name="has_common_securities" class="form-select">
+                    <option value="0" @selected(!$team->has_common_securities)>No</option>
+                    <option value="1" @selected($team->has_common_securities)>Yes</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Team exists from</label>
+            <input type="date"
+                   name="valid_from"
+                   class="form-control"
+                   value="{{ old('valid_from', optional($team->valid_from)->format('Y-m-d')) }}">
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Team exists until</label>
+            <input type="date"
+                   name="valid_until"
+                   class="form-control"
+                   value="{{ old('valid_until', optional($team->valid_until)->format('Y-m-d')) }}">
+            </div>
         </div>
 
         @cannot('update', $team)

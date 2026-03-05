@@ -62,4 +62,10 @@ class Category extends Model
     {
         return $this->belongsToMany(Rollup::class, 'rollup_category');
     }
+
+    public function teamUsers()
+    {
+        return $this->hasMany(TeamUser::class, 'clearing_account');
+    }
+
 }

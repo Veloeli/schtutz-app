@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\TeamUser;
+use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class TeamUserController extends Controller
 {
@@ -33,30 +36,62 @@ class TeamUserController extends Controller
             return back()->withErrors(['email' => 'User not found.']);
         }
 
-        // Create membership
-        TeamUser::firstOrCreate([
-            'team_id' => $team->id,
-            'user_id' => $user->id,
-        ]);
+        DB::transaction(function () use ($team, $user) {
+            // Create membership if not exists
+            TeamUser::firstOrCreate([
+                'team_id' => $team->id,
+                'user_id' => $user->id,
+            ]);
+
+            // Reset reveal_private for ALL members of this team
+            TeamUser::where('team_id', $team->id)
+                ->update(['reveal_private' => 0]);
+        });
 
         return back()->with('success', 'Member added.');
     }
-
+    
     public function edit(Team $team, TeamUser $membership)
     {
-        return view('teams.memberships.edit', compact('team', 'membership'));
+        $clearingAccounts = Category::where('type', 'CL')
+            ->whereNull('team_id')
+            ->orderBy('code')
+            ->get();
+
+        return view('teams.memberships.edit', [
+            'membership' => $membership,
+            'team' => $team,
+            'clearingAccounts' => $clearingAccounts,
+        ]);
     }
 
     public function update(Request $request, Team $team, TeamUser $membership)
     {
+        $requiresFinancials = $team->has_common_financials;
+
         $validated = $request->validate([
-            'sharing_ratio'     => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'member_from'       => ['nullable', 'date'],
-            'member_to'         => ['nullable', 'date', 'after_or_equal:member_from'],
-            'reveal_private'    => ['nullable', 'boolean'],
-            'user_apply_date'   => ['nullable', 'date'],
-            'team_accept_date'  => ['nullable', 'date'],
-            'clearing_account'  => ['nullable', 'string', 'max:255'],
+            'sharing_ratio' => [
+                $requiresFinancials ? 'required' : 'nullable',
+                'numeric',
+                'min:0',
+                'max:100',
+            ],
+
+            'reveal_private' => [
+                $requiresFinancials ? 'required' : 'nullable',
+                'boolean',
+            ],
+
+            'clearing_account' => [
+                $requiresFinancials ? 'required' : 'nullable',
+                'integer',
+                Rule::exists('categories', 'id')->where(fn($q) =>
+                    $q->where('type', 'CL')->whereNull('team_id')
+                ),
+            ],
+
+            'member_from' => ['nullable', 'date'],
+            'member_to'   => ['nullable', 'date', 'after_or_equal:member_from'],
         ]);
 
         $membership->update($validated);
@@ -71,7 +106,7 @@ class TeamUserController extends Controller
         $membership->delete();
 
         return redirect()
-            ->route('teams.index', $team)
+            ->route('teams.index')
             ->with('success', 'Member removed successfully.');
     }
 

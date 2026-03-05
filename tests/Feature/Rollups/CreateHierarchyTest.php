@@ -40,12 +40,6 @@ class CreateHierarchyTest extends TestCase
             'name' => 'Child A1',
             'parent_id' => $rootId,
         ]);
-
-        // owner should be created in pivot table
-        $this->assertDatabaseHas('rollup_user', [
-            'rollup_id' => $root->id,
-            'user_id' => $user->id,
-        ]);
     }
 
 }

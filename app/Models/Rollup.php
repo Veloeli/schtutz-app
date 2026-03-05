@@ -16,6 +16,7 @@ class Rollup extends Model
         'parent_id',
         'code',
         'user_id',
+        'team_id',
     ];
 
     protected static function booted()
@@ -27,30 +28,30 @@ class Rollup extends Model
                 return;
             }
 
-            $allowedUsers = VisibilityService::allowedUserIds($user);
+            $teamIds = VisibilityService::allowedTeamIds($user);
 
-            // 1. Find root rollups the user can access
+            // 1. Find visible root rollups
             $rootIds = Rollup::withoutGlobalScopes()
                 ->whereNull('parent_id')
-                ->where(function ($q) use ($allowedUsers) {
-                    $q->whereIn('user_id', $allowedUsers)
-                      ->orWhereHas('users', function ($uq) use ($allowedUsers) {
-                          $uq->whereIn('users.id', $allowedUsers);
+                ->where(function ($q) use ($user, $teamIds) {
+                    $q->whereIn('team_id', $teamIds)
+                      ->orWhere(function ($q2) use ($user) {
+                          $q2->whereNull('team_id')
+                             ->where('user_id', $user->id);
                       });
                 })
                 ->pluck('id')
                 ->toArray();
 
-            // If user has no root access, show nothing
             if (empty($rootIds)) {
                 $query->whereRaw('1 = 0');
                 return;
             }
 
-            // 2. Collect all descendants of those roots
+            // 2. Collect all descendants of visible roots
             $visibleIds = Rollup::descendantIdsOf($rootIds);
 
-            // 3. Apply final visibility filter
+            // 3. Apply final filter
             $query->whereIn('id', $visibleIds);
         });
     }
@@ -109,13 +110,35 @@ class Rollup extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | Access / Visibility (pivot)
+    | Access / Visibility
     |--------------------------------------------------------------------------
     */
 
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
+
     public function users()
     {
-        return $this->belongsToMany(User::class, 'rollup_user');
+        return $this->hasManyThrough(
+            User::class,
+            TeamUser::class,
+            'team_id',   // team_user.team_id
+            'id',        // users.id
+            'team_id',   // rollups.team_id
+            'user_id'    // team_user.user_id
+        );
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function scopeVisibleTo($query, User $user)
+    {
+        return $query->whereIn('team_id', $user->teams->pluck('id'));
     }
 
     /*

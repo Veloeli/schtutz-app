@@ -15,7 +15,6 @@ class TeamMembershipUiTest extends TestCase
     #[Test]
     public function only_logged_in_user_sees_edit_button_on_their_membership_row()
     {
-        $owner = User::factory()->create();
         $peter = User::factory()->create();
         $andrea = User::factory()->create();
 

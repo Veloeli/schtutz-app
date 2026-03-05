@@ -58,49 +58,4 @@
     </div>
 </div>
 
-{{-- DEPUTIES --}}
-<div class="card mb-4">
-    <div class="card-header">
-        Deputies
-    </div>
-
-    <div class="card-body">
-
-        {{-- List deputies --}}
-        @if(auth()->user()->deputies->isEmpty())
-            <p class="text-muted">No deputies assigned.</p>
-        @else
-            <ul class="list-group">
-                @foreach(auth()->user()->deputies as $deputy)
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ $deputy->name }}</strong><br>
-                            <small class="text-muted">{{ $deputy->email }}</small>
-                        </div>
-
-                        <form method="POST" action="{{ route('profile.deputies.destroy', $deputy) }}">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-danger">Remove</button>
-                        </form>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
-        <p>
-
-        {{-- Add deputy --}}
-        <form action="{{ route('profile.deputies.store') }}" method="POST" class="d-flex gap-2">
-            @csrf
-            <input type="email"
-                   name="email"
-                   class="form-control"
-                   placeholder="User email"
-                   required>
-            <button class="btn btn-primary">Add</button>
-        </form>
-
-    </div>
-</div>
-
 @endsection

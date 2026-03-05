@@ -85,8 +85,6 @@ Route::middleware('auth')->group(function () {
     // PROFILES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::post('/profile/deputies', [ProfileController::class, 'storeDeputy'])->name('profile.deputies.store');
-    Route::delete('/profile/deputies/{deputy}', [ProfileController::class, 'destroyDeputy'])->name('profile.deputies.destroy');
 
 /*    // AUTHENTICATION
     Route::middleware('auth')->group(function () {

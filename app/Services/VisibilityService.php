@@ -12,22 +12,7 @@ class VisibilityService
 {
     public static function allowedUserIds(User $user)
     {
-        return cache()->remember(
-            "allowed_users_{$user->id}",
-            now()->addSeconds(1),
-            function () use ($user) {
-
-                // IMPORTANT: raw DB query, no Eloquent relationships
-                $represented = DB::table('deputies')
-                    ->where('deputy_user_id', $user->id)
-                    ->pluck('user_id');
-
-                return collect([$user->id])
-                    ->merge($represented)
-                    ->unique()
-                    ->values();
-            }
-        );
+        return collect([$user->id]);
     }
 
     public static function allowedTeamIds(User $user)
@@ -36,10 +21,8 @@ class VisibilityService
             "allowed_teams_{$user->id}",
             now()->addSeconds(1),
             function () use ($user) {
-
-                // IMPORTANT: raw DB query, no Eloquent relationships
                 return DB::table('team_user')
-                    ->whereIn('user_id', self::allowedUserIds($user))
+                    ->where('user_id', $user->id)
                     ->pluck('team_id')
                     ->unique()
                     ->values();

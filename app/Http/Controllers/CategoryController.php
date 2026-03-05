@@ -57,7 +57,7 @@ class CategoryController extends Controller
 
         $user = auth()->user();
 
-        $teams = $user->teams;
+        $teams = $user->teamsWithFinancials;
 
         return view('categories.edit', compact('category', 'teams'));
     }

@@ -18,14 +18,6 @@ class RollupFactory extends Factory
         ];
     }
 
-    public function configure()
-    {
-        return $this->afterCreating(function (Rollup $rollup) {
-            // mirror createRoot() behavior
-            $rollup->users()->attach($rollup->user_id);
-        });
-    }
-
     /**
      * Create a child rollup with a given parent.
      */
