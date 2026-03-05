@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Models\User;
+use App\Models\Rollup;
 use Illuminate\Support\Collection;
 
 class CategoryService
@@ -15,12 +16,71 @@ class CategoryService
     public function allVisible(User $user): Collection
     {
         // Global scope already filters visibility
-        return Category::select('categories.*')
+        $categories = Category::select('categories.*')
             ->with(['team', 'owner'])
             ->orderBy('name')
             ->get();
-   }
 
+        return $this->attachFullPaths($categories, $user);
+    }
+
+    protected function resolveRootRollup(User $user): ?Rollup
+    {
+        // 1. Session root_id (global scope ensures visibility)
+        if ($rootId = session('root_id')) {
+            if ($root = Rollup::find($rootId)) {
+                return $root;
+            }
+        }
+
+        // 2. User preference (global scope ensures visibility)
+        if ($user->preferred_rollup) {
+            return $user->preferred_rollup;
+        }
+
+        // 3. First visible rollup (global scope ensures visibility)
+        if ($first = Rollup::first()) {
+            return $first;
+        }
+
+        // 4. Nothing available
+        return null;
+    }
+
+    public function attachFullPaths(Collection $categories, User $user): Collection
+    {
+        $root = $this->resolveRootRollup($user);
+
+        if (! $root instanceof Rollup) {
+            return $categories; // fallback
+        }
+
+        $paths = $this->buildPathsFromRollup($root);
+
+        return $categories->map(function ($category) use ($paths) {
+            $category->full_path = $paths[$category->id] ?? $category->name;
+            return $category;
+        });
+    }
+
+    protected function buildPathsFromRollup(Rollup $node, string $prefix = ''): array
+    {
+        $current = trim($prefix . ' / ' . $node->name, ' /');
+
+        $paths = [];
+
+        // categories attached to this rollup
+        foreach ($node->categories as $cat) {
+            $paths[$cat->id] = $current . ' / ' . $cat->name;
+        }
+
+        // recurse into children
+        foreach ($node->children as $child) {
+            $paths += $this->buildPathsFromRollup($child, $current);
+        }
+
+        return $paths;
+    }
 
     public function create(User $user, array $data): Category
     {
