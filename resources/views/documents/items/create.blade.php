@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="container py-4">
-    <h2>Create Item for: {{ $document->title }}</h2>
+    <h2 class="mb-4">Create Item in Document: {{ $document->title }}</h2>
 
     <form method="POST" action="{{ route('documents.items.store', $document) }}">
         @csrf
@@ -29,6 +29,9 @@
                     <option value="{{ $category->id }}"
                         {{ old('category_id', $item->category_id ?? '') == $category->id ? 'selected' : '' }}>
                         {{ $category->full_path }}
+                        @if ($category->source_label)
+                            [{{ $category->source_label }}]
+                        @endif
                     </option>
                 @endforeach
             </select>
@@ -45,5 +48,35 @@
         <a href="{{ route('documents.index', $document) }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
+
+@endsection
+
+@section('scripts')
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const nameInput = document.querySelector('input[name="name"]');
+    const categorySelect = document.querySelector('select[name="category_id"]');
+
+    let timer = null;
+
+    nameInput.addEventListener('input', function () {
+        clearTimeout(timer);
+
+        const value = this.value.trim();
+        if (value.length < 3) return;
+
+        timer = setTimeout(() => {
+            fetch(`{{ route('documents.items.suggest-category', $document) }}?name=${encodeURIComponent(value)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.category_id) {
+                        categorySelect.value = data.category_id;
+                    }
+                });
+        }, 300);
+    });
+});
+</script>
 
 @endsection

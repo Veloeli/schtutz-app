@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="container py-4">
-    <h2>Edit Item in Document "{{ $document->title }}"</h2>
+    <h2 class="mb-4">Edit Item in Document: "{{ $document->title }}"</h2>
 
     <form method="POST" action="{{ route('documents.items.update', [$document, $item]) }}">
         @csrf
@@ -29,7 +29,10 @@
                 @foreach($categories as $category)
                     <option value="{{ $category->id }}"
                         {{ old('category_id', $item->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                        {{ $category->name }}
+                        {{ $category->full_path }}
+                        @if ($category->source_label)
+                            [{{ $category->source_label }}]
+                        @endif
                     </option>
                 @endforeach
             </select>
@@ -50,7 +53,7 @@
                 <button type="submit" class="btn btn-primary">Update</button>
                 @endcan
                 
-                <a href="{{ route('documents.show', $document) }}"
+                <a href="{{ route('documents.index') }}"
                    class="btn btn-secondary">
                     Cancel
                 </a>
@@ -100,5 +103,35 @@
         </div>
     </div>
 </div>
+
+@endsection
+
+@section('scripts')
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const nameInput = document.querySelector('input[name="name"]');
+    const categorySelect = document.querySelector('select[name="category_id"]');
+
+    let timer = null;
+
+    nameInput.addEventListener('input', function () {
+        clearTimeout(timer);
+
+        const value = this.value.trim();
+        if (value.length < 3) return;
+
+        timer = setTimeout(() => {
+            fetch(`{{ route('documents.items.suggest-category', $document) }}?name=${encodeURIComponent(value)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.category_id) {
+                        categorySelect.value = data.category_id;
+                    }
+                });
+        }, 300);
+    });
+});
+</script>
 
 @endsection

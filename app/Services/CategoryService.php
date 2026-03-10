@@ -5,7 +5,10 @@ namespace App\Services;
 use App\Models\Category;
 use App\Models\User;
 use App\Models\Rollup;
+use App\Models\Document;
+use App\Models\Item;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryService
 {
@@ -22,6 +25,79 @@ class CategoryService
             ->get();
 
         return $this->attachFullPaths($categories, $user);
+    }
+
+    public function visibleForDocument(User $user, Document $document): Collection
+    {
+        $date = $document->posting_date->format('Y-m-d');
+
+        $cacheKey = "categories:visible:user:{$user->id}:date:{$date}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $document) {
+            return $this->queryVisibleForDocument($user, $document);
+        });
+    }
+
+    private function queryVisibleForDocument(User $user, Document $document): Collection
+    {
+        $date = $document->posting_date;
+        $ownerId = $document->owner_id;
+
+        $categories = Category::query()
+            ->select('categories.*')
+            ->with(['team', 'owner'])
+            ->leftJoin('teams', 'categories.team_id', '=', 'teams.id')
+            ->leftJoin('team_user', function ($join) use ($ownerId) {
+                $join->on('team_user.team_id', '=', 'teams.id')
+                     ->where('team_user.user_id', '=', $ownerId);
+            })
+            ->where('categories.is_selectable', 1)
+
+            // Team validity window
+            ->where(function ($q) use ($date) {
+                $q->whereNull('teams.id')
+                  ->orWhereRaw('? between coalesce(teams.valid_from, "1900-01-01") 
+                                          and coalesce(teams.valid_until, "2999-12-31")', [$date]);
+            })
+
+            // Membership validity window
+            ->whereRaw('? between coalesce(team_user.member_from, "1900-01-01") 
+                                and coalesce(team_user.member_to, "2999-12-31")', [$date])
+
+            // Category ownership
+            ->where(function ($q) use ($ownerId) {
+                $q->where('categories.user_id', $ownerId)
+                  ->orWhereNotNull('categories.team_id');
+            })
+
+            ->orderBy('categories.name')
+            ->get();
+
+        return $this->attachFullPaths($categories, $user);
+    }
+
+    public function suggestCategory(User $user, Document $document, string $itemName): ?int
+    {
+        if (strlen($itemName) < 3) {
+            return null;
+        }
+
+        // Get allowed categories for this document
+        $allowed = $this->visibleForDocument($user, $document)->pluck('id')->toArray();
+
+        if (empty($allowed)) {
+            return null;
+        }
+
+        // Find best historical match
+        return Item::query()
+            ->select('category_id')
+            ->whereIn('category_id', $allowed)
+            ->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($itemName) . '%'])
+            ->groupBy('category_id')
+            ->orderByRaw('COUNT(*) DESC')   // most common match wins
+            ->limit(1)
+            ->value('category_id');
     }
 
     protected function resolveRootRollup(User $user): ?Rollup
@@ -55,17 +131,25 @@ class CategoryService
             return $categories; // fallback
         }
 
-        $paths = $this->buildPathsFromRollup($root);
+        $cacheKey = "categories.paths.user.{$user->id}.root.{$root->id}";
 
-        return $categories->map(function ($category) use ($paths) {
-            $category->full_path = $paths[$category->id] ?? $category->name;
-            return $category;
+        $paths = cache()->remember($cacheKey, now()->addMinutes(10), function () use ($root) {
+            return $this->buildPathsFromRollup($root);
         });
+
+        return $categories->map(function ($cat) use ($paths, $user) { 
+            $cat->full_path = $paths[$cat->id] ?? $cat->name; 
+            $cat->source_label = $this->computeSourceLabel($cat, $user); 
+            return $cat; 
+        });    
     }
 
     protected function buildPathsFromRollup(Rollup $node, string $prefix = ''): array
     {
-        $current = trim($prefix . ' / ' . $node->name, ' /');
+        // skip root node
+        $current = ($node->parent_id) 
+            ? trim($prefix . ' / ' . $node->name, ' /') 
+            : '';
 
         $paths = [];
 
@@ -80,6 +164,22 @@ class CategoryService
         }
 
         return $paths;
+    }
+
+    protected function computeSourceLabel(Category $category, User $user): ?string
+    {
+        // Case 1: Category belongs to a team
+        if ($category->team) {
+            return $category->team->name;
+        }
+
+        // Case 2: Category belongs to another user
+        if ($category->owner && $category->owner->id !== $user->id) {
+            return $category->owner->name;
+        }
+
+        // Case 3: Category belongs to the current user → no label
+        return null;
     }
 
     public function create(User $user, array $data): Category
@@ -113,5 +213,4 @@ class CategoryService
 
         return $category;
     }
-
 }

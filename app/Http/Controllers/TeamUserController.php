@@ -109,21 +109,4 @@ class TeamUserController extends Controller
             ->route('teams.index')
             ->with('success', 'Member removed successfully.');
     }
-
-    public function search(Team $team, Request $request)
-    {
-        $request->validate([
-            'q' => ['required', 'string', 'min:2'],
-        ]);
-
-        $query = $request->q;
-
-        $users = User::where('email', 'like', "%{$query}%")
-            ->whereNotIn('id', $team->members()->pluck('users.id'))
-            ->orderBy('email')
-            ->limit(10)
-            ->get(['id', 'name', 'email']);
-
-        return response()->json($users);
-    }
 }

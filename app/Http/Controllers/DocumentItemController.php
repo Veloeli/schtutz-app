@@ -29,9 +29,9 @@ class DocumentItemController extends Controller
     {
         $user = auth()->user();
 
-        // Load categories visible to the user
-        $categories = $this->categories->allVisible($user);
-//            ->sortBy('full_path');
+        // Load categories visible to the user on the document date
+        $categories = $this->categories->visibleForDocument($user, $document)
+            ->sortBy('full_path');
 
         return view('documents.items.create', [
             'document' => $document,
@@ -57,9 +57,9 @@ class DocumentItemController extends Controller
     {
         $user = auth()->user();
 
-        // Load categories visible to the user
-        $categories = $this->categories->allVisible($user);
-//            ->sortBy('full_path');
+        // Load categories visible to the user on the document date
+        $categories = $this->categories->visibleForDocument($user, $document)
+            ->sortBy('full_path');
 
         return view('documents.items.edit', [
             'document' => $document,
@@ -88,5 +88,19 @@ class DocumentItemController extends Controller
 
         return redirect()->route('documents.index')
             ->with('success', 'Item deleted.');
+    }
+
+    public function suggestCategory(Request $request, Document $document)
+    {
+        $name = $request->query('name');
+
+        if (!$name || strlen($name) < 3) {
+            return response()->json(['category_id' => null]);
+        }
+
+        $categoryId = app(CategoryService::class)
+            ->suggestCategory($request->user(), $document, $name);
+
+        return response()->json(['category_id' => $categoryId]);
     }
 }

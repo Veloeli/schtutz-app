@@ -7,6 +7,7 @@ use App\Services\DocumentService;
 use App\Models\User;
 use App\Models\Team;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class DocumentController extends Controller
@@ -17,14 +18,24 @@ class DocumentController extends Controller
 
     public function index(Request $request)
     {
-        $month = $request->query('month')
-            ? Carbon::parse($request->query('month') . '-01')
-            : now();
+        // Store month if provided
+        if ($request->filled('month')) {
+            session(['document_month' => $request->month]);
+        }
+
+        // Store filter if provided
+        if ($request->filled('filter')) {
+            session(['document_filter' => $request->filter]);
+        }
+
+        // Retrieve stored values (fallbacks if none stored)
+        $month = session('document_month', now()->format('Y-m'));
+        $filter = session('document_filter', 'all');
 
         $user = auth()->user();
 
         // Filter documents using the service (which uses the policy)
-        $documents = $this->documents->visibleFor($user, $month);
+        $documents = $this->documents->visibleFor($user, $month, $filter);
 
         $teams = $user->teamsWithFinancials()->get();
 
@@ -35,25 +46,30 @@ class DocumentController extends Controller
               ->distinct();
         })->get();
 
+        //return view('documents.index', compact('month', 'filter', 'teams', 'members'));
+
         return view('documents.index', [
             'documents' => $documents,
-            'month' => $month->format('Y-m'),
+            'month' => $month,
+            'filter' => $filter,
             'teams' => $teams,
             'members' => $members,
         ]);
     }
 
-    public function show(Document $document, Request $request)
-    {
-
-        $month = \Carbon\Carbon::parse($document->posting_date)->format('Y-m');
-        return redirect()->route('documents.index', ['month' => $month]);
-
-    }
-
     public function create()
     {
-        return view('documents.create');
+        // 1. If user has a stored posting_date, use it directly
+        if (session()->has('document_posting_date')) {
+            $defaultPostingDate = session('document_posting_date');
+        } else {
+            // 2. Otherwise suggest today
+            $defaultPostingDate = now()->format('Y-m-d');
+        }
+
+        return view('documents.create', [
+            'posting_date' => $defaultPostingDate,
+        ]);
     }
 
     public function store(Request $request)
@@ -73,11 +89,24 @@ class DocumentController extends Controller
         // Create the document
         $document = $this->documents->create($validated);
 
+        // Store posting_date in session
+        session(['document_posting_date' => $validated['posting_date']]);
+        
         // Expand the newly created document in the UI
         session()->put("expanded_docs.{$document->id}", true);
 
+        // If a team filter is active, reset it to "all" (else the new document would not be visible)
+        $filter = session('document_filter', 'all');
+        if (str_starts_with($filter, 'team-')) {
+            session(['document_filter' => 'all']);
+        }
+
+        // Set the month in session based on the document date
+        $month = \Carbon\Carbon::parse($document->posting_date)->format('Y-m');
+        session(['document_month' => $month]);
+
         return redirect()
-            ->route('documents.show', $document)
+            ->route('documents.index')
             ->with('success', 'Document created successfully.');
     }
 
@@ -113,15 +142,23 @@ class DocumentController extends Controller
 
         $this->documents->update($document, $validated);
 
+        // Set the month in session based on the document date
         $month = \Carbon\Carbon::parse($document->posting_date)->format('Y-m');
-        return redirect()->route('documents.index', ['month' => $month]);
+        session(['document_month' => $month]);
+
+        return redirect()
+            ->route('documents.index')
+            ->with('success', 'Document updated.');
     }
 
     public function destroy(Document $document)
     {
+        $month = \Carbon\Carbon::parse($document->posting_date)->format('Y-m');
+
         $this->documents->delete($document);
 
-        return redirect()->route('documents.index')
+        return redirect()
+            ->route('documents.index', ['month' => $month])
             ->with('success', 'Document deleted.');
     }
 

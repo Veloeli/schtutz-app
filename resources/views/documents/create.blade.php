@@ -23,7 +23,7 @@
             <input type="date"
                    name="posting_date"
                    class="form-control"
-                   value="{{ now()->format('Y-m-d') }}"
+                   value="{{ $posting_date }}"
                    required>
         </div>
         

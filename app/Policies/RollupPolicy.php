@@ -46,11 +46,6 @@ class RollupPolicy
             $rollup->categories()->withoutGlobalScopes()->count() === 0;
     }
 
-    public function detachUser(User $actingUser, Rollup $rollup, User $targetUser)
-    {
-        return !($rollup->user_id === $targetUser->id);
-    }
-
     /**
      * Determine whether the user can restore the model.
      */

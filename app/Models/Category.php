@@ -42,8 +42,8 @@ class Category extends Model
             $allowedTeams = \App\Services\VisibilityService::allowedTeamIds($user);
 
             $query->where(function ($q) use ($allowedUsers, $allowedTeams) {
-                $q->whereIn('user_id', $allowedUsers)
-                  ->orWhereIn('team_id', $allowedTeams);
+                $q->whereIn('categories.user_id', $allowedUsers)
+                  ->orWhereIn('categories.team_id', $allowedTeams);
             });
         });
     }

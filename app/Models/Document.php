@@ -8,7 +8,17 @@ use App\Services\VisibilityService;
 
 class Document extends Model
 {
-    protected $fillable = ['title', 'posting_date', 'repeat_pattern', 'repeat_constant', 'owner_id'];
+    protected $fillable = [
+        'title', 
+        'posting_date', 
+        'repeat_pattern', 
+        'repeat_constant', 
+        'owner_id'
+    ];
+
+    protected $casts = [
+        'posting_date' => 'date',
+    ];
 
     public function items()
     {

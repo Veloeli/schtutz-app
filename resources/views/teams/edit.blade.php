@@ -145,11 +145,11 @@
                             @endif                    
 
                             @if($membership->member_from !== null) 
-                                • Member from: <strong>{{ $membership->member_from }}</strong>
+                                • Member from: <strong>{{ $membership->member_from->format('d.m.Y') }}</strong>
                             @endif                    
 
                             @if($membership->member_to !== null) 
-                                • Member until: <strong>{{ $membership->member_to }}</strong>
+                                • Member until: <strong>{{ $membership->member_to->format('d.m.Y') }}</strong>
                             @endif                    
 
                        </small>

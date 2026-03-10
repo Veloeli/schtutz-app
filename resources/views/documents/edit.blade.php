@@ -73,7 +73,7 @@
                 </button>
                 @endcan
 
-                <a href="{{ route('documents.show', $document) }}"
+                <a href="{{ route('documents.index') }}"
                    class="btn btn-secondary">
                     Cancel
                 </a>

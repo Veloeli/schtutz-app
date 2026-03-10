@@ -14,12 +14,21 @@ class DocumentService
         return Document::orderBy('created_at', 'desc')->get();
     }
 
-    public function visibleFor(User $user, Carbon $month): Collection
+    public function visibleFor(User $user, Carbon|string $month, string $filter = 'all'): Collection
     {
+        if (is_string($month)) {
+            $month = Carbon::createFromFormat('Y-m', $month);
+        }
+
         $allowedUsers = VisibilityService::allowedUserIds($user);
 
         $start = $month->copy()->startOfMonth();
         $end   = $month->copy()->endOfMonth();
+
+        // Parse filter
+        [$filterType, $filterId] = $filter && str_contains($filter, '-')
+            ? explode('-', $filter)
+            : [null, null];
 
         return Document::query()
             ->whereBetween('posting_date', [$start, $end])
@@ -27,10 +36,18 @@ class DocumentService
                 $q->whereIn('owner_id', $allowedUsers)
                   ->orWhereHas('items.category'); // category global scope applies
             })
+            ->when($filterType === 'team', function ($q) use ($filterId) {
+                $q->whereHas('items.category.team', function ($q) use ($filterId) {
+                    $q->where('teams.id', $filterId);
+                });
+            })
+            ->when($filterType === 'member', function ($q) use ($filterId) {
+                $q->where('owner_id', $filterId);
+            })
             ->with([
                 'owner',
                 'items' => function ($q) {
-                    $q->whereHas('category') // only items with visible categories
+                    $q->whereHas('category')
                       ->with('category.team')
                       ->with('document');
                 },
