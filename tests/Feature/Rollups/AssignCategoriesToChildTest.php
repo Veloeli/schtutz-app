@@ -20,7 +20,7 @@ class AssignCategoriesToChildTest extends TestCase
 
         $this->actingAs($user);
 
-        $categories = Category::factory()->count(3)->create();
+        $categories = Category::factory()->forUser($user)->count(3)->create();
 
         foreach ($categories as $category) {
             $response = $this->post("/rollups/{$child->id}/categories", [

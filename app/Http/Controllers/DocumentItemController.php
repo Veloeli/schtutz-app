@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use App\Services\CategoryService;
+use Illuminate\Support\Facades\Log;
 
 class DocumentItemController extends Controller
 {
@@ -29,9 +30,14 @@ class DocumentItemController extends Controller
     {
         $user = auth()->user();
 
+$start = microtime(true);
+
         // Load categories visible to the user on the document date
         $categories = $this->categories->visibleForDocument($user, $document)
             ->sortBy('full_path');
+
+$time = microtime(true) - $start;
+Log::info('PROFILE visibleForDocument ' . $time);
 
         return view('documents.items.create', [
             'document' => $document,

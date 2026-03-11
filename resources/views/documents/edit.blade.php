@@ -27,7 +27,7 @@
                 <input type="date"
                        name="posting_date"
                        class="form-control"
-                       value="{{ old('posting_date', $document->posting_date) }}"
+                       value="{{ old('posting_date', optional($document->posting_date)->format('Y-m-d')) }}"
                        required>
             </div>
 

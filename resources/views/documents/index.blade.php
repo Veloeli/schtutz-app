@@ -74,7 +74,7 @@
                         {{ $doc->title }}
                         
                         <div class="text-muted small">
-                            {{ $doc->posting_date }}
+                            {{ $doc->posting_date->format('d.m.Y') }}
 
                             @if($doc->owner_id !== auth()->id())
                                 <span class="badge bg-secondary">

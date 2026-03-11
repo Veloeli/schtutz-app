@@ -5,11 +5,21 @@ namespace App\Services;
 use App\Models\Rollup;
 use App\Models\Category;
 use App\Models\User;
+use App\Services\UserCacheVersionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RollupService
 {
+    public function __construct(
+        protected UserCacheVersionService $versionService
+    ) {}
+
+    protected function incrementUserVersion(): void
+    {
+        $this->versionService->increment('categories');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Create a root node
@@ -17,6 +27,9 @@ class RollupService
     */
     public function createRoot(array $data, User $creator): Rollup
     {
+        //invalidate cache
+        $this->incrementUserVersion();
+
         return DB::transaction(function () use ($data, $creator) {
 
             $rollup = Rollup::create([
@@ -44,6 +57,9 @@ class RollupService
             ]);
         }
 
+        //invalidate cache
+        $this->incrementUserVersion();
+
         return Rollup::create([
             'name'      => $data['name'],
             'code'      => $data['code'] ?? null,
@@ -65,6 +81,9 @@ class RollupService
             'user_id' => $data['user_id'],
             'team_id' => $data['team_id'] ?? null,
         ]);
+
+        //invalidate cache
+        $this->incrementUserVersion();
 
         return $rollup;
     }
@@ -94,6 +113,9 @@ class RollupService
             // 4. Delete hierarchy
             $rollup->delete();
         });
+
+        //invalidate cache
+        $this->incrementUserVersion();
     }
 
     /*
@@ -104,5 +126,17 @@ class RollupService
     public function attachCategory(Rollup $rollup, Category $category): void
     {
         $rollup->categories()->syncWithoutDetaching($category->id);
+
+        //invalidate cache
+        $this->incrementUserVersion();
     }
+    
+    public function detachCategory(Rollup $rollup, Category $category): void
+    {
+        $rollup->categories()->detach($category->id);
+
+        // invalidate cache
+        $this->incrementUserVersion();
+    }
+
 }

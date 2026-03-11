@@ -42,7 +42,7 @@ class CategoryController extends Controller
             'name'          => 'required|string|max:255',
             'team_id'       => 'nullable|exists:teams,id',
             'code'          => 'nullable|string|max:50',
-            'is_selectable' => 'nullable|boolean',
+            'is_selectable' => 'required|boolean',
             'type'          => 'required|in:EX,IN,IC,AL,AP,CL',
         ]);
 
@@ -70,7 +70,7 @@ class CategoryController extends Controller
             'name'          => 'required|string|max:255',
             'team_id'       => 'nullable|exists:teams,id',
             'code'          => 'nullable|string|max:50',
-            'is_selectable' => 'nullable|boolean',
+            'is_selectable' => 'required|boolean',
             'type'          => 'required|in:EX,IN,IC,AL,AP,CL',
         ]);
 
@@ -83,7 +83,7 @@ class CategoryController extends Controller
     {
         $this->authorize('delete', $category);
 
-        $category->delete();
+        $this->categoryService->delete($category);
 
         return redirect()->route('categories.index');
     }

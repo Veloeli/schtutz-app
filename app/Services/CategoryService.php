@@ -9,9 +9,24 @@ use App\Models\Document;
 use App\Models\Item;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class CategoryService
 {
+    public function __construct(
+        protected UserCacheVersionService $versionService
+    ) {}
+
+    protected function getUserVersion(): int
+    {
+        return $this->versionService->get('categories');
+    }
+
+    protected function incrementUserVersion(): void
+    {
+        $this->versionService->increment('categories');
+    }
+
     /**
      * Return all categories visible to the user.
      * Visibility is enforced by the Category global scope.
@@ -31,7 +46,11 @@ class CategoryService
     {
         $date = $document->posting_date->format('Y-m-d');
 
-        $cacheKey = "categories:visible:user:{$user->id}:date:{$date}";
+        $version = $this->getUserVersion();
+
+        $cacheKey = "categories:visible:v{$version}:user:{$user->id}:date:{$date}";
+
+Log::info('CACHE remember ' . $cacheKey);
 
         return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $document) {
             return $this->queryVisibleForDocument($user, $document);
@@ -131,7 +150,10 @@ class CategoryService
             return $categories; // fallback
         }
 
-        $cacheKey = "categories.paths.user.{$user->id}.root.{$root->id}";
+        $version = $this->getUserVersion();
+
+        $cacheKey = "categories:paths:v{$version}:user:{$user->id}:root:{$root->id}";
+Log::info('CACHE remember ' . $cacheKey);
 
         $paths = cache()->remember($cacheKey, now()->addMinutes(10), function () use ($root) {
             return $this->buildPathsFromRollup($root);
@@ -184,13 +206,15 @@ class CategoryService
 
     public function create(User $user, array $data): Category
     {
+        //invalidate cache
+        $this->incrementUserVersion();
+        
         return Category::create([
             'name'          => $data['name'],
             'user_id'       => $user->id,
             'team_id'       => $data['team_id'] ?? null,
             'code'          => $data['code'] ?? null,
             'type'          => $data['type'],
-            'is_selectable' => isset($data['is_selectable']),
         ]);
     }
 
@@ -211,6 +235,18 @@ class CategoryService
 
         $category->update(array_intersect_key($data, array_flip($allowed)));
 
+        //invalidate cache
+        $this->incrementUserVersion();
+
         return $category;
+    }
+
+    public function delete(Category $category): void
+    {
+        // Perform the actual deletion
+        $category->delete();
+
+        //invalidate cache
+        $this->incrementUserVersion();
     }
 }

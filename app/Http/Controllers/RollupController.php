@@ -202,14 +202,16 @@ class RollupController extends Controller
             'category_id' => 'required|exists:categories,id',
         ]);
 
-        $rollup->categories()->attach($request->category_id);
+        $category = Category::findOrFail($request->category_id);
+
+        $this->service->attachCategory($rollup, $category);
 
         return back();
     }
 
     public function detachCategory(Rollup $rollup, Category $category)
     {
-        $rollup->categories()->detach($category->id);
+        $this->service->detachCategory($rollup, $category);
 
         return back();
     }
