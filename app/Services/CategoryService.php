@@ -22,7 +22,6 @@ class CategoryService
         // Global scope already filters visibility
         $categories = Category::select('categories.*')
             ->with(['team', 'owner'])
-            ->orderBy('name')
             ->get();
 
         return $categories;
@@ -43,13 +42,12 @@ class CategoryService
         $ownerId = $document->owner_id;
 
         // Determine the root rollup for this user/team
-        $rootId = $this->resolveRootRollup($user)->id;
+        $rootId = optional($this->resolveRootRollup($user))->id;
 
-        return Category::query()
+        // 1. Fetch visible categories (your existing logic)
+        $categories = Category::query()
             ->select([
                 'categories.*',
-                DB::raw('CONCAT(rp.path, " > ", categories.name) AS path_to_category'),
-                'rp.depth',
                 DB::raw("
                     CASE 
                         WHEN categories.team_id is not null THEN teams.name
@@ -67,13 +65,6 @@ class CategoryService
                 $join->on('team_user.team_id', '=', 'teams.id')
                      ->where('team_user.user_id', '=', $ownerId);
             })
-
-            // joins for rollup hierarchy
-            ->leftJoin('rollup_category as rc', 'rc.category_id', '=', 'categories.id')
-            ->leftJoin('rollup_paths_view as rp', 'rp.id', '=', 'rc.rollup_id')
-
-            // restrict to the correct root tree
-            ->where('rp.root_id', $rootId)
 
             // Existing rules
             ->where('categories.is_selectable', 1)
@@ -95,10 +86,41 @@ class CategoryService
                   ->orWhereNotNull('categories.team_id');
             })
 
-            // Order by hierarchical path
-            ->orderBy('path_to_category')
-
             ->get();
+
+        // 2. If no categories or no rootId, attach simple names and return
+        if ($categories->isEmpty() || !$rootId) {
+            return $categories
+                ->each(function ($cat) {
+                    $cat->path_to_category = $cat->code . ' ' . $cat->name;
+                    $cat->depth = 0;
+                })
+                ->sortBy('path_to_category')
+                ->values();
+        }
+
+        // 3. Fetch rollup paths for this root, per category
+        $rollupData = DB::table('rollup_category as rc')
+            ->join('rollup_paths_view as rp', 'rp.id', '=', 'rc.rollup_id')
+            ->where('rp.root_id', $rootId)
+            ->select('rc.category_id', 'rp.path', 'rp.depth')
+            ->get()
+            ->keyBy('category_id');
+
+        // 4. Attach path_to_category and depth
+        foreach ($categories as $cat) {
+            $path = $rollupData[$cat->id] ?? null;
+
+            $cat->path_to_category = $path
+                ? $cat->code . ' ' . $path->path . ' > ' . $cat->name
+                : $cat->code . ' ' . $cat->name;
+
+            $cat->depth = $path->depth ?? 0;
+        }
+
+        $categories = $categories->sortBy('path_to_category')->values();
+        
+        return $categories;
     }
 
     /**

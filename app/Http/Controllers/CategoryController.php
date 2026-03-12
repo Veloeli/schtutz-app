@@ -22,7 +22,8 @@ class CategoryController extends Controller
 
         // Visibility is enforced by the Category global scope
         $categories = $this->categoryService->allVisible($user)
-            ->sortBy('name');
+            ->sortBy(fn($cat) => $cat->code . ' ' . $cat->name, SORT_STRING)
+            ->values();
 
         $users = User::all();
 

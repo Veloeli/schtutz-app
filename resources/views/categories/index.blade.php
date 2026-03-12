@@ -24,7 +24,7 @@
     <tbody>
     @foreach ($categories as $category)
         <tr>
-            <td>{{ $category->name }}</td>
+            <td>{{ $category->code }} {{ $category->name }}</td>
             <td>
                 @if ($category->team)
                     <span class="badge bg-secondary">
