@@ -30,7 +30,7 @@
                         {{ old('category_id', $item->category_id ?? '') == $category->id ? 'selected' : '' }}>
                         {{ $category->path_to_category }}
                         @if ($category->source_label)
-                            ⟦{{ $category->source_label }}⟧
+                            [{{ $category->source_label }}]
                         @endif
                     </option>
                 @endforeach
