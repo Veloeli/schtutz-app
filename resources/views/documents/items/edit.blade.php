@@ -29,9 +29,9 @@
                 @foreach($categories as $category)
                     <option value="{{ $category->id }}"
                         {{ old('category_id', $item->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                        {{ $category->full_path }}
+                        {{ $category->path_to_category }}
                         @if ($category->source_label)
-                            [{{ $category->source_label }}]
+                            ⟦{{ $category->source_label }}⟧
                         @endif
                     </option>
                 @endforeach

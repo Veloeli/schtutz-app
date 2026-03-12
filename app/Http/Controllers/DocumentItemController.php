@@ -35,9 +35,9 @@ $start = microtime(true);
         // Load categories visible to the user on the document date
         $categories = $this->categories->visibleForDocument($user, $document)
             ->sortBy('full_path');
-
 $time = microtime(true) - $start;
 Log::info('PROFILE visibleForDocument ' . $time);
+Log::info('visibleForDocument.count ' . $categories->count());
 
         return view('documents.items.create', [
             'document' => $document,
@@ -109,4 +109,5 @@ Log::info('PROFILE visibleForDocument ' . $time);
 
         return response()->json(['category_id' => $categoryId]);
     }
+    
 }

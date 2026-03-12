@@ -36,13 +36,13 @@ class CategoryPolicy
     public function update(User $user, Category $category)
     {
         return $category->user_id === $user->id
-            || $category->team->members->contains($user);
+            || optional(optional($category->team)->members)->contains($user);
     }
 
     public function delete(User $user, Category $category)
     {
         return $category->user_id === $user->id
-            || $category->team->members->contains($user);
+            || optional(optional($category->team)->members)->contains($user);
     }
 
     /**

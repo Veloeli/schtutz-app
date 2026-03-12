@@ -8,25 +8,11 @@ use App\Models\Rollup;
 use App\Models\Document;
 use App\Models\Item;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CategoryService
 {
-    public function __construct(
-        protected UserCacheVersionService $versionService
-    ) {}
-
-    protected function getUserVersion(): int
-    {
-        return $this->versionService->get('categories');
-    }
-
-    protected function incrementUserVersion(): void
-    {
-        $this->versionService->increment('categories');
-    }
-
     /**
      * Return all categories visible to the user.
      * Visibility is enforced by the Category global scope.
@@ -39,22 +25,16 @@ class CategoryService
             ->orderBy('name')
             ->get();
 
-        return $this->attachFullPaths($categories, $user);
+        return $categories;
     }
 
+    /**
+     * Return all categories available to the user for a given document date
+     * Visibility is enforced by the Category global scope.
+     */
     public function visibleForDocument(User $user, Document $document): Collection
     {
-        $date = $document->posting_date->format('Y-m-d');
-
-        $version = $this->getUserVersion();
-
-        $cacheKey = "categories:visible:v{$version}:user:{$user->id}:date:{$date}";
-
-Log::info('CACHE remember ' . $cacheKey);
-
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $document) {
-            return $this->queryVisibleForDocument($user, $document);
-        });
+        return $this->queryVisibleForDocument($user, $document);
     }
 
     private function queryVisibleForDocument(User $user, Document $document): Collection
@@ -62,14 +42,40 @@ Log::info('CACHE remember ' . $cacheKey);
         $date = $document->posting_date;
         $ownerId = $document->owner_id;
 
-        $categories = Category::query()
-            ->select('categories.*')
+        // Determine the root rollup for this user/team
+        $rootId = $this->resolveRootRollup($user)->id;
+
+        return Category::query()
+            ->select([
+                'categories.*',
+                DB::raw('CONCAT(rp.path, " > ", categories.name) AS path_to_category'),
+                'rp.depth',
+                DB::raw("
+                    CASE 
+                        WHEN categories.team_id is not null THEN teams.name
+                        WHEN categories.user_id = {$user->id} THEN null
+                        ELSE users.name 
+                    END AS source_label
+                ")
+            ])
             ->with(['team', 'owner'])
+
+            // joins for users and teams
+            ->leftJoin('users', 'categories.user_id', '=', 'users.id')
             ->leftJoin('teams', 'categories.team_id', '=', 'teams.id')
             ->leftJoin('team_user', function ($join) use ($ownerId) {
                 $join->on('team_user.team_id', '=', 'teams.id')
                      ->where('team_user.user_id', '=', $ownerId);
             })
+
+            // joins for rollup hierarchy
+            ->leftJoin('rollup_category as rc', 'rc.category_id', '=', 'categories.id')
+            ->leftJoin('rollup_paths_view as rp', 'rp.id', '=', 'rc.rollup_id')
+
+            // restrict to the correct root tree
+            ->where('rp.root_id', $rootId)
+
+            // Existing rules
             ->where('categories.is_selectable', 1)
 
             // Team validity window
@@ -89,12 +95,16 @@ Log::info('CACHE remember ' . $cacheKey);
                   ->orWhereNotNull('categories.team_id');
             })
 
-            ->orderBy('categories.name')
-            ->get();
+            // Order by hierarchical path
+            ->orderBy('path_to_category')
 
-        return $this->attachFullPaths($categories, $user);
+            ->get();
     }
 
+    /**
+     * Find the most frequently used category for a given search term (item name)
+     * Visibility is enforced by the Category global scope.
+     */
     public function suggestCategory(User $user, Document $document, string $itemName): ?int
     {
         if (strlen($itemName) < 3) {
@@ -102,21 +112,23 @@ Log::info('CACHE remember ' . $cacheKey);
         }
 
         // Get allowed categories for this document
-        $allowed = $this->visibleForDocument($user, $document)->pluck('id')->toArray();
+        $categoryIds = $this->visibleForDocument($user, $document)->pluck('id')->toArray();
 
-        if (empty($allowed)) {
+        if (empty($categoryIds)) {
             return null;
         }
 
         // Find best historical match
-        return Item::query()
+        $categoryId = Item::query()
             ->select('category_id')
-            ->whereIn('category_id', $allowed)
-            ->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($itemName) . '%'])
+            ->whereIn('category_id', $categoryIds)
+            ->whereRaw('MATCH(name) AGAINST (? IN NATURAL LANGUAGE MODE)', [$itemName])
             ->groupBy('category_id')
-            ->orderByRaw('COUNT(*) DESC')   // most common match wins
+            ->orderByRaw('COUNT(*) DESC')
             ->limit(1)
             ->value('category_id');
+
+        return $categoryId;
     }
 
     protected function resolveRootRollup(User $user): ?Rollup
@@ -142,73 +154,8 @@ Log::info('CACHE remember ' . $cacheKey);
         return null;
     }
 
-    public function attachFullPaths(Collection $categories, User $user): Collection
-    {
-        $root = $this->resolveRootRollup($user);
-
-        if (! $root instanceof Rollup) {
-            return $categories; // fallback
-        }
-
-        $version = $this->getUserVersion();
-
-        $cacheKey = "categories:paths:v{$version}:user:{$user->id}:root:{$root->id}";
-Log::info('CACHE remember ' . $cacheKey);
-
-        $paths = cache()->remember($cacheKey, now()->addMinutes(10), function () use ($root) {
-            return $this->buildPathsFromRollup($root);
-        });
-
-        return $categories->map(function ($cat) use ($paths, $user) { 
-            $cat->full_path = $paths[$cat->id] ?? $cat->name; 
-            $cat->source_label = $this->computeSourceLabel($cat, $user); 
-            return $cat; 
-        });    
-    }
-
-    protected function buildPathsFromRollup(Rollup $node, string $prefix = ''): array
-    {
-        // skip root node
-        $current = ($node->parent_id) 
-            ? trim($prefix . ' / ' . $node->name, ' /') 
-            : '';
-
-        $paths = [];
-
-        // categories attached to this rollup
-        foreach ($node->categories as $cat) {
-            $paths[$cat->id] = $current . ' / ' . $cat->name;
-        }
-
-        // recurse into children
-        foreach ($node->children as $child) {
-            $paths += $this->buildPathsFromRollup($child, $current);
-        }
-
-        return $paths;
-    }
-
-    protected function computeSourceLabel(Category $category, User $user): ?string
-    {
-        // Case 1: Category belongs to a team
-        if ($category->team) {
-            return $category->team->name;
-        }
-
-        // Case 2: Category belongs to another user
-        if ($category->owner && $category->owner->id !== $user->id) {
-            return $category->owner->name;
-        }
-
-        // Case 3: Category belongs to the current user → no label
-        return null;
-    }
-
     public function create(User $user, array $data): Category
     {
-        //invalidate cache
-        $this->incrementUserVersion();
-        
         return Category::create([
             'name'          => $data['name'],
             'user_id'       => $user->id,
@@ -235,18 +182,11 @@ Log::info('CACHE remember ' . $cacheKey);
 
         $category->update(array_intersect_key($data, array_flip($allowed)));
 
-        //invalidate cache
-        $this->incrementUserVersion();
-
         return $category;
     }
 
     public function delete(Category $category): void
     {
-        // Perform the actual deletion
         $category->delete();
-
-        //invalidate cache
-        $this->incrementUserVersion();
     }
 }

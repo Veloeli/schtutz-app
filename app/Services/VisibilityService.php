@@ -12,14 +12,29 @@ class VisibilityService
 {
     public static function allowedUserIds(User $user)
     {
-        return collect([$user->id]);
+        $userId = $user->id;
+
+        return cache()->remember(
+            "allowed_users_{$userId}",
+            now()->addSeconds(3),
+            function () use ($userId) {
+                return collect([$userId])->merge(
+                    DB::table('team_user as other')
+                        ->join('team_user as myself', 'myself.team_id', '=', 'other.team_id')
+                        ->where('myself.user_id', $userId)
+                        ->where('other.reveal_private', 1)
+                        ->where('other.user_id', '!=', $userId)
+                        ->pluck('other.user_id')
+                );
+            }
+        )->map(fn($id) => (int) $id);
     }
 
     public static function allowedTeamIds(User $user)
     {
         return cache()->remember(
             "allowed_teams_{$user->id}",
-            now()->addSeconds(1),
+            now()->addSeconds(3),
             function () use ($user) {
                 return DB::table('team_user')
                     ->where('user_id', $user->id)
