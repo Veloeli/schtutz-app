@@ -20,31 +20,11 @@
     <x-month-picker name="month" :value="$month" />
 
     <!-- User/Team Selector -->
-    <form method="GET" class="mb-3">
-        <select name="filter" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
-
-            <option value="all" {{ $filter === 'all' ? 'selected' : '' }}>All</option>
-
-            <optgroup label="Teams">
-                @foreach ($teams as $team)
-                    <option value="team-{{ $team->id }}"
-                        {{ $filter === 'team-'.$team->id ? 'selected' : '' }}>
-                        {{ $team->name }}
-                    </option>
-                @endforeach
-            </optgroup>
-
-            <optgroup label="Members">
-                @foreach ($members as $member)
-                    <option value="member-{{ $member->id }}"
-                        {{ $filter === 'member-'.$member->id ? 'selected' : '' }}>
-                        {{ $member->name }}
-                    </option>
-                @endforeach
-            </optgroup>
-
-        </select>
-    </form>
+    <x-user-team-selector
+        :teams="$teams"
+        :members="$members"
+        :filter="$filter"
+    />
 </div>
 
 
@@ -71,14 +51,18 @@
                         data-bs-toggle="collapse"
                         data-bs-target="#doc-{{ $doc->id }}">
 
-                        {{ $doc->title }}
-                        
+                        {{ $doc->title }} 
                         <div class="text-muted small">
                             {{ $doc->posting_date->format('d.m.Y') }}
 
                             @if($doc->owner_id !== auth()->id())
                                 <span class="badge bg-secondary">
                                     {{ $doc->owner->name }}
+                                </span>
+                            @endif
+                            @if ($doc->amount_sum != 0)
+                                <span class="badge bg-danger">
+                                    Balance: {{ formatAmount($doc->amount_sum) }}
                                 </span>
                             @endif
                         </div>

@@ -11,12 +11,21 @@
     </a>
 </div>
 
+<div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+    <!-- User/Team Selector -->
+    <x-user-team-selector
+        :teams="$teams"
+        :members="$members"
+        :filter="$filter"
+    />
+</div>
+
 <!-- Categories Table -->
 <table class="table table-hover">
     <thead>
         <tr>
             <th>Name</th>
-            <th>Team</th>
+            <th>Team / User</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -24,14 +33,16 @@
     <tbody>
     @foreach ($categories as $category)
         <tr>
-            <td>{{ $category->code }} {{ $category->name }}</td>
             <td>
-                @if ($category->team)
+                @if(!$category->is_selectable)<del>@endif
+                {{ $category->code }} {{ $category->name }}
+                @if($category->is_selectable)</del>@endif
+            </td>
+            <td>
+                @if ($category->source_label)
                     <span class="badge bg-secondary">
-                        {{ $category->team->name }}
+                        {{ $category->source_label }}
                     </span>
-                @else
-                    <span class="text-muted">(private)</span>
                 @endif
             </td>
             <td style="width: 1%; white-space: nowrap;">
@@ -43,7 +54,7 @@
                     </a>
                 @else
                     <span id="owner-category-{{ $category->id }}" class="text-muted">
-                        ({{ $category->owner->name }})
+                        
                     </span>
                 @endcan
             </td>

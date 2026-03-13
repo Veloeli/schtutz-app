@@ -17,15 +17,37 @@
 
         <div class="mb-3">
             <label class="form-label">Amount</label>
-            <input type="number" step="0.01" name="amount"
-                   class="form-control"
-                   value="{{ old('amount', $item->amount ?? '') }}">
+            <input type="number" step="0.000001" name="amount"
+                   class="form-control"         
+            value="{{ old('amount', formatAmount($item->amount ?? '')) }}"
         </div>
+
+        @php
+            $current = $item->category ?? null;
+
+            // Check if the current category is NOT in the selectable list
+            $isCurrentMissing = $current && ! $categories->contains('id', $current->id);
+        @endphp
 
         <div class="mb-3">
             <label class="form-label">Category</label>
             <select name="category_id" class="form-select" required>
-                <option value="">-- Select Category --</option>
+
+                {{-- If the current category is missing, show it as a special option --}}
+                @if ($isCurrentMissing)
+                    <option value="{{ $current->id }}" selected data-archived="true">
+                        {{ $current->code }} {{ $current->name }}
+                        @if ($current->source_label)
+                            [{{ $current->source_label }}]
+                        @endif
+                        (no longer selectable)
+                    </option>
+                    <option disabled>──────────</option>
+                @else
+                    <option value="">-- Select Category --</option>
+                @endif
+
+                {{-- Active/selectable categories --}}
                 @foreach($categories as $category)
                     <option value="{{ $category->id }}"
                         {{ old('category_id', $item->category_id ?? '') == $category->id ? 'selected' : '' }}>

@@ -46,8 +46,6 @@ class DocumentController extends Controller
               ->distinct();
         })->get();
 
-        //return view('documents.index', compact('month', 'filter', 'teams', 'members'));
-
         return view('documents.index', [
             'documents' => $documents,
             'month' => $month,

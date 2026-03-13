@@ -30,14 +30,9 @@ class DocumentItemController extends Controller
     {
         $user = auth()->user();
 
-$start = microtime(true);
-
         // Load categories visible to the user on the document date
         $categories = $this->categories->visibleForDocument($user, $document)
             ->sortBy('full_path');
-$time = microtime(true) - $start;
-Log::info('PROFILE visibleForDocument ' . $time);
-Log::info('visibleForDocument.count ' . $categories->count());
 
         return view('documents.items.create', [
             'document' => $document,
@@ -59,20 +54,23 @@ Log::info('visibleForDocument.count ' . $categories->count());
         return redirect()->route('documents.index', $document);
     }
 
-    public function edit(Document $document, Item $item)
-    {
-        $user = auth()->user();
+public function edit(Document $document, Item $item)
+{
+    $user = auth()->user();
 
-        // Load categories visible to the user on the document date
-        $categories = $this->categories->visibleForDocument($user, $document)
-            ->sortBy('full_path');
+    // Load categories visible to the user on the document date
+    $categories = $this->categories->visibleForDocument($user, $document)
+        ->sortBy('full_path');
 
-        return view('documents.items.edit', [
-            'document' => $document,
-            'item' => $item,
-            'categories' => $categories,
-        ]);
-    }
+    // Load the item's current category so Blade can access it
+    $item->load('category');
+
+    return view('documents.items.edit', [
+        'document' => $document,
+        'item' => $item,
+        'categories' => $categories,
+    ]);
+}
 
     public function update(Request $request, Document $document, Item $item)
     {

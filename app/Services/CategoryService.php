@@ -17,10 +17,21 @@ class CategoryService
      * Return all categories visible to the user.
      * Visibility is enforced by the Category global scope.
      */
-    public function allVisible(User $user): Collection
+    public function visibleFor(User $user, string $filter = 'all'): Collection
     {
+        // Parse filter
+        [$filterType, $filterId] = $filter && str_contains($filter, '-')
+            ? explode('-', $filter)
+            : [null, null];
+
         // Global scope already filters visibility
         $categories = Category::select('categories.*')
+            ->when($filterType === 'team', function ($q) use ($filterId) {
+                $q->where('team_id', $filterId);
+            })
+            ->when($filterType === 'member', function ($q) use ($filterId) {
+                $q->where('user_id', $filterId);
+            })
             ->with(['team', 'owner'])
             ->get();
 
@@ -46,16 +57,7 @@ class CategoryService
 
         // 1. Fetch visible categories (your existing logic)
         $categories = Category::query()
-            ->select([
-                'categories.*',
-                DB::raw("
-                    CASE 
-                        WHEN categories.team_id is not null THEN teams.name
-                        WHEN categories.user_id = {$user->id} THEN null
-                        ELSE users.name 
-                    END AS source_label
-                ")
-            ])
+            ->select('categories.*')
             ->with(['team', 'owner'])
 
             // joins for users and teams

@@ -68,4 +68,17 @@ class Category extends Model
         return $this->hasMany(TeamUser::class, 'clearing_account');
     }
 
+    // getSourceLabelAttribute() becomes source_label automatically
+    public function getSourceLabelAttribute()
+    {
+        if ($this->team_id) {
+            return $this->team?->name;
+        }
+
+        if ($this->user_id === auth()->id()) {
+            return null;
+        }
+
+        return $this->owner?->name;
+    }
 }

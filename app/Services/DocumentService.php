@@ -52,6 +52,7 @@ class DocumentService
                       ->with('document');
                 },
             ])
+            ->withSum('items as amount_sum', 'amount')
             ->orderBy('posting_date', 'desc')
             ->get();
     }

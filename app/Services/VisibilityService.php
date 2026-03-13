@@ -98,13 +98,19 @@ class VisibilityService
     
     public static function canEditDocument(User $user, Document $document)
     {
+        if ($document->wizard) {
+            return false;
+        }
+
         return self::allowedUserIds($user)->contains($document->owner_id);
     }
 
     public static function canEditItem(User $user, Item $item)
     {
-        $allowedUsers = self::allowedUserIds($user);
-
-        return $allowedUsers->contains($item->document->owner_id);
+        if ($item->document->wizard) {
+            return false;
+        }
+        
+        return self::allowedUserIds($user)->contains($item->document->owner_id);
     }
 }

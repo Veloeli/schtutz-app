@@ -41,16 +41,12 @@
         </div>
 
         <!-- Selectable -->
-        <div class="form-check mb-3">
-            <input class="form-check-input"
-                   type="checkbox"
-                   name="is_selectable"
-                   value="1"
-                   id="selectableCheck"
-                   {{ $category->is_selectable ? 'checked' : '' }}>
-            <label class="form-check-label" for="selectableCheck">
-                Category can be selected
-            </label>
+        <div class="mb-3">
+            <label class="form-label">Category is in use</label>
+            <select name="is_selectable" class="form-select">
+                <option value="0" @selected(!$category->is_selectable)>No</option>
+                <option value="1" @selected($category->is_selectable)>Yes</option>
+            </select>
         </div>
 
         <!-- Team -->

@@ -16,18 +16,38 @@ class CategoryController extends Controller
         $this->categoryService = $categoryService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        // Store filter if provided
+        if ($request->filled('filter')) {
+            session(['category_filter' => $request->filter]);
+        }
+
+        // Retrieve stored values (fallbacks if none stored)
+        $filter = session('category_filter', 'all');
+
         $user = auth()->user();
 
         // Visibility is enforced by the Category global scope
-        $categories = $this->categoryService->allVisible($user)
+        $categories = $this->categoryService->visibleFor($user, $filter)
             ->sortBy(fn($cat) => $cat->code . ' ' . $cat->name, SORT_STRING)
             ->values();
 
-        $users = User::all();
+        $teams = $user->teamsWithFinancials()->get();
 
-        return view('categories.index', compact('categories', 'users'));
+        $members = User::whereIn('id', function ($q) use ($teams) {
+            $q->select('user_id')
+              ->from('team_user')
+              ->whereIn('team_id', $teams->pluck('id'))
+              ->distinct();
+        })->get();
+        
+        return view('categories.index', [
+            'categories' => $categories,
+            'filter' => $filter,
+            'teams' => $teams,
+            'members' => $members,
+        ]);
     }
 
     public function create()

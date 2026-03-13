@@ -20,14 +20,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        require_once app_path('Support/helpers.php');
 
-DB::listen(function ($query) {
-    logger()->info('SQL', [
-        'sql' => $query->sql,
-        'bindings' => $query->bindings,
-        'time' => $query->time,
-    ]);
-});
+        DB::listen(function ($query) {
+            logger()->info('SQL', [
+                'sql' => $query->sql,
+                'bindings' => $query->bindings,
+                'time' => $query->time,
+            ]);
+        });
     }
 
     protected $policies = [
