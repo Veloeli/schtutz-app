@@ -64,7 +64,7 @@
             <label class="form-label">Quantity</label>
             <input type="number" step="0.001" name="quantity"
                    class="form-control"
-                   value="{{ old('quantity', $item->quantity ?? '') }}">
+                   value="{{ old('quantity', formatQuantity($item->quantity ?? '')) }}"
         </div>
 
         <div class="d-flex justify-content-between mt-4">

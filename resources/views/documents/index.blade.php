@@ -60,7 +60,7 @@
                                     {{ $doc->owner->name }}
                                 </span>
                             @endif
-                            @if ($doc->amount_sum != 0)
+                            @if (!isZeroAmount($doc->amount_sum))
                                 <span class="badge bg-danger">
                                     Balance: {{ formatAmount($doc->amount_sum) }}
                                 </span>
