@@ -73,6 +73,11 @@ class User extends Authenticatable
         return $this->teams()->where('teams.has_common_reporting', true);
     }
 
+    public function teamsWithSecurities()
+    {
+        return $this->teams()->where('teams.has_common_securities', true);
+    }
+
     public function activeTeams()
     {
         $today = now();
@@ -91,5 +96,20 @@ class User extends Authenticatable
     public function preferredRoot()
     {
         return $this->belongsTo(Rollup::class, 'preferred_root_id');
+    }
+
+    /**
+     * Usage:
+     * $teams = $user->teamsWithSecurities()->get();
+     * $members = User::inTeams($teams)->get();
+     */
+    public function scopeInTeams($query, $teams)
+    {
+        return $query->whereIn('id', function ($q) use ($teams) {
+            $q->select('user_id')
+              ->from('team_user')
+              ->whereIn('team_id', $teams->pluck('id'))
+              ->distinct();
+        });
     }
 }

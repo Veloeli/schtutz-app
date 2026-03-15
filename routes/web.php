@@ -46,6 +46,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{rollup}/categories/{category}', [RollupController::class, 'detachCategory'])->name('detachCategory');
     });
 
+    // Securities
+    Route::resource('securities', \App\Http\Controllers\SecurityController::class);
+
     // PROFILES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

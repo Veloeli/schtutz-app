@@ -125,6 +125,29 @@ class CategoryService
         return $categories;
     }
 
+    protected function resolveRootRollup(User $user): ?Rollup
+    {
+        // 1. Session root_id (global scope ensures visibility)
+        if ($rootId = session('root_id')) {
+            if ($root = Rollup::find($rootId)) {
+                return $root;
+            }
+        }
+
+        // 2. User preference (global scope ensures visibility)
+        if ($user->preferred_rollup) {
+            return $user->preferred_rollup;
+        }
+
+        // 3. First visible rollup (global scope ensures visibility)
+        if ($first = Rollup::first()) {
+            return $first;
+        }
+
+        // 4. Nothing available
+        return null;
+    }
+
     /**
      * Find the most frequently used category for a given search term (item name)
      * Visibility is enforced by the Category global scope.
@@ -153,29 +176,6 @@ class CategoryService
             ->value('category_id');
 
         return $categoryId;
-    }
-
-    protected function resolveRootRollup(User $user): ?Rollup
-    {
-        // 1. Session root_id (global scope ensures visibility)
-        if ($rootId = session('root_id')) {
-            if ($root = Rollup::find($rootId)) {
-                return $root;
-            }
-        }
-
-        // 2. User preference (global scope ensures visibility)
-        if ($user->preferred_rollup) {
-            return $user->preferred_rollup;
-        }
-
-        // 3. First visible rollup (global scope ensures visibility)
-        if ($first = Rollup::first()) {
-            return $first;
-        }
-
-        // 4. Nothing available
-        return null;
     }
 
     public function create(User $user, array $data): Category

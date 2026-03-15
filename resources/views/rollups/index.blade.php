@@ -8,7 +8,7 @@
     <h2 class="mb-4">Rollup Hierarchies</h2>
 
     <a href="{{ route('rollups.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Add 
+        <i class="bi bi-plus-circle"></i> New 
     </a>
 </div>
 

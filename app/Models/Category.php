@@ -68,6 +68,14 @@ class Category extends Model
         return $this->hasMany(TeamUser::class, 'clearing_account');
     }
 
+    /**
+     * Return the human‑readable label for the type.
+     */
+    public function getTypeLabelAttribute(): string
+    {
+        return self::TYPES[$this->type] ?? '';
+    }
+
     // getSourceLabelAttribute() becomes source_label automatically
     public function getSourceLabelAttribute()
     {

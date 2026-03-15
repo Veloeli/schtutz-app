@@ -21,46 +21,53 @@
 </div>
 
 <!-- Categories Table -->
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Team / User</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
+@if($categories->isEmpty())
+    <p class="text-muted">
+        No categories yet.
+    </p>
+@else
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th></th>
+            </tr>
+        </thead>
 
-    <tbody>
-    @foreach ($categories as $category)
-        <tr>
-            <td>
-                @if(!$category->is_selectable)<del>@endif
-                {{ $category->code }} {{ $category->name }}
-                @if($category->is_selectable)</del>@endif
-            </td>
-            <td>
-                @if ($category->source_label)
-                    <span class="badge bg-secondary">
-                        {{ $category->source_label }}
-                    </span>
-                @endif
-            </td>
-            <td style="width: 1%; white-space: nowrap;">
-                @can('update', $category)
-                    <a id="edit-category-{{ $category->id }}"
-                       href="{{ route('categories.edit', $category) }}"
-                       class="btn btn-sm btn-primary">
-                        Edit
-                    </a>
-                @else
-                    <span id="owner-category-{{ $category->id }}" class="text-muted">
-                        
-                    </span>
-                @endcan
-            </td>
-        </tr>
-    @endforeach
-    </tbody>
-</table>
+        <tbody>
+        @foreach ($categories as $category)
+            <tr>
+                <td>
+                    @if(!$category->is_selectable)<del>@endif
+                    {{ $category->code }} {{ $category->name }}
+                    @if($category->is_selectable)</del>@endif
+
+                    <div class="text-muted small">
+                        {{ $category->type_label }}
+                        @if ($category->source_label)
+                            <span class="badge bg-secondary">
+                                {{ $category->source_label }}
+                            </span>
+                        @endif
+                    </div>
+                </td>
+                <td style="width: 1%; white-space: nowrap;">
+                    @can('update', $category)
+                        <a id="edit-category-{{ $category->id }}"
+                           href="{{ route('categories.edit', $category) }}"
+                           class="btn btn-sm btn-primary">
+                            Edit
+                        </a>
+                    @else
+                        <span id="owner-category-{{ $category->id }}" class="text-muted">
+                            
+                        </span>
+                    @endcan
+                </td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+@endif
 
 @endsection

@@ -77,6 +77,13 @@
                     </li>
 
                     <li class="nav-item">
+                        <a href="{{ route('securities.index') }}" 
+                           class="nav-link {{ request()->is('securities*') ? 'active text-white fw-bold' : 'text-white' }}">
+                            <i class="bi bi-graph-up"></i> Securities
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a href="{{ route('rollups.index') }}" 
                            class="nav-link {{ request()->routeIs('rollups.*') ? 'active text-white fw-bold' : 'text-white' }}">
                             <i class="bi bi-diagram-3"></i> Rollups

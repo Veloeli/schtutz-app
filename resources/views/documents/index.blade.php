@@ -11,7 +11,7 @@
     <h2 class="mb-4">Documents</h2>
 
     <a href="{{ route('documents.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Add Document
+        <i class="bi bi-plus-circle"></i> New Document
     </a>
 </div>
 
@@ -38,7 +38,7 @@
         <thead>
             <tr>
                 <th>Document</th>
-                <th>Actions</th>
+                <th></th>
             </tr>
         </thead>
 
