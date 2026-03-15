@@ -24,7 +24,7 @@ class SecurityController extends Controller
         $securities = $query
             ->orderByDesc('is_tracked')
             ->orderBy('name')
-            ->paginate(20)
+            ->paginate(100)
             ->withQueryString();
 
         return view('securities.index', compact('securities'));
