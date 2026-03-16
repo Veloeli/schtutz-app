@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Security extends Model
@@ -52,6 +53,11 @@ class Security extends Model
         'option_calculate'  => 'boolean',
         'option_strike'     => 'decimal:6',
         'option_multiplier' => 'decimal:6',
+    ];
+
+    protected $attributes = [
+        'is_tracked' => true,
+        'is_in_use' => true,
     ];
 
     protected static function booted()
@@ -131,5 +137,16 @@ class Security extends Model
         }
 
         return $this->owner?->name;
+    }
+
+    public function linkUnless(Security $current): string
+    {
+        if ($this->id === $current->id) {
+            return e($this->name);
+        }
+
+        return '<a href="' . route('securities.edit', $this->id) . '" class="text-blue-600">'
+            . e($this->name)
+            . '</a>';
     }
 }

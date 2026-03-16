@@ -33,7 +33,7 @@ return new class extends Migration
                 ->nullOnDelete();
 
             $table->boolean('is_in_use')->default(true);
-            $table->boolean('is_tracked')->default(false);
+            $table->boolean('is_tracked')->default(true);
             $table->boolean('is_hedged')->default(false);
 
             $table->string('region')->nullable();

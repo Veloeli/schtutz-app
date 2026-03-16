@@ -16,7 +16,7 @@ class StockSplit extends Model
 
     protected $casts = [
         'split_date' => 'date',
-        'split_factor' => 'decimal:6',
+        'split_factor' => 'decimal:4',
     ];
 
     // -----------------------------------------
@@ -31,5 +31,16 @@ class StockSplit extends Model
     public function newSecurity(): BelongsTo
     {
         return $this->belongsTo(Security::class, 'new_id');
+    }
+
+    // -----------------------------------------
+    // Helpers
+    // -----------------------------------------
+
+    public function getDirectionAttribute(): string
+    {
+        return $this->split_factor > 1
+            ? 'forward'
+            : 'reverse';
     }
 }

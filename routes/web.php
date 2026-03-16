@@ -7,6 +7,8 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RollupController;
+use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\StockSplitController;
 
 // Welcome page (public)
 Route::get('/', function () {
@@ -47,7 +49,8 @@ Route::middleware('auth')->group(function () {
     });
 
     // Securities
-    Route::resource('securities', \App\Http\Controllers\SecurityController::class);
+    Route::resource('securities', SecurityController::class);
+    Route::resource('stock-splits', StockSplitController::class);
 
     // PROFILES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
