@@ -101,6 +101,16 @@ class Security extends Model
         return $this->belongsTo(Security::class, 'option_underlying_id');
     }
 
+    public function splitsFrom(): HasMany
+    {
+        return $this->hasMany(StockSplit::class, 'old_id');
+    }
+
+    public function splitsTo(): HasMany
+    {
+        return $this->hasMany(StockSplit::class, 'new_id');
+    }
+
     /**
      * Return the human‑readable label for the asset class.
      */

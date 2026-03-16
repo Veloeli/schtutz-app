@@ -48,7 +48,7 @@
                         @if(!$security->is_in_use)</del>@endif
 
                         @if($security->is_tracked)
-                            <span class="text-warning" title="Tracked security">⭐</span>
+                            <span class="text-warning" title="Track Price">⭐</span>
                         @endif
 
                         <div class="text-muted small">

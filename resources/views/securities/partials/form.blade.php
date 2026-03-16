@@ -28,7 +28,8 @@
     </div>
 
     <div class="col-md-4 mb-3">
-        <label class="form-label">Track Value</label>
+        <label class="form-label">Track Price</label>
+        <span class="text-warning" title="Track Price">⭐</span>
         <select name="is_tracked" class="form-select" id="is_tracked">
             <option value="0" @selected(old('is_tracked', $security->is_tracked) == 0)>No</option>
             <option value="1" @selected(old('is_tracked', $security->is_tracked) == 1)>Yes</option>
