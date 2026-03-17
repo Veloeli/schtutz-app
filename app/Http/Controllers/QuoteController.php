@@ -30,29 +30,6 @@ class QuoteController extends Controller
         return view('quotes.index', compact('quotes', 'securities'));
     }
 
-    public function store(StoreQuoteRequest $request)
-    {
-        $quote = Quote::create($request->validated());
-        return response()->json($quote, 201);
-    }
-
-    public function show(Quote $quote)
-    {
-        return $quote->load('security');
-    }
-
-    public function update(UpdateQuoteRequest $request, Quote $quote)
-    {
-        $quote->update($request->validated());
-        return response()->json($quote);
-    }
-
-    public function destroy(Quote $quote)
-    {
-        $quote->delete();
-        return response()->noContent();
-    }
-
     public function showImportForm()
     {
         $securities = Security::orderBy('name')->get();
@@ -131,7 +108,6 @@ class QuoteController extends Controller
             }
 
             // Create or update quote
-//dd($securityId, $date, $price);
             $quote = Quote::updateOrCreate(
                 [
                     'security_id' => $securityId,

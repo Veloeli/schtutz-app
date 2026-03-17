@@ -59,40 +59,35 @@
     </form>
 
     {{-- Quotes Table --}}
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover mb-0 align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Security</th>
-                        <th>Date</th>
-                        <th class="text-end">Price</th>
-                    </tr>
-                </thead>
+    @if($quotes->isEmpty())
+        <p class="text-muted">
+            No quotes yet.
+        </p>
+    @else
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Security</th>
+                    <th>Date</th>
+                    <th class="text-end">Price</th>
+                </tr>
+            </thead>
 
-                <tbody>
-                    @forelse($quotes as $quote)
-                        <tr>
-                            <td>{{ $quote->security->name }}</td>
-                            <td>{{ $quote->quote_date->format('Y-m-d') }}</td>
-                            <td class="text-end">{{ number_format($quote->price, 4) }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3" class="text-center py-4 text-muted">
-                                No quotes found.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+            <tbody>
+                @foreach($quotes as $quote)
+                    <tr>
+                        <td>{{ $quote->security->name }}</td>
+                        <td>{{ $quote->quote_date->format('Y-m-d') }}</td>
+                        <td class="text-end">{{ number_format($quote->price, 4) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
 
         {{-- Pagination --}}
         <div class="card-footer">
             {{ $quotes->appends(request()->query())->links() }}
         </div>
-    </div>
-
+    @endif
 </div>
 @endsection
