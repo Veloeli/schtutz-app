@@ -18,7 +18,7 @@
             <div class="row g-3">
 
                 {{-- Security Filter --}}
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Security</label>
                     <select name="security_id" class="form-select">
                         <option value="">All</option>
@@ -32,7 +32,7 @@
                 </div>
 
                 {{-- From Date --}}
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-md-3">
                     <label class="form-label">From Date</label>
                     <input type="date" name="from_date"
                            value="{{ request('from_date') }}"
@@ -40,7 +40,7 @@
                 </div>
 
                 {{-- To Date --}}
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-md-3">
                     <label class="form-label">To Date</label>
                     <input type="date" name="to_date"
                            value="{{ request('to_date') }}"
@@ -48,8 +48,9 @@
                 </div>
 
                 {{-- Submit --}}
-                <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-primary w-100">
+                <div class="col-12 col-md-2 d-grid">
+                    <label class="form-label d-none d-md-block">&nbsp;</label>
+                    <button class="btn btn-primary">
                         Filter
                     </button>
                 </div>
@@ -64,29 +65,39 @@
             No quotes yet.
         </p>
     @else
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Security</th>
-                    <th>Date</th>
-                    <th class="text-end">Price</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach($quotes as $quote)
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
                     <tr>
-                        <td>{{ $quote->security->name }}</td>
-                        <td>{{ $quote->quote_date->format('Y-m-d') }}</td>
-                        <td class="text-end">{{ number_format($quote->price, 4) }}</td>
+                        <th>Security</th>
+                        <th class="text-end">Price</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
 
-        {{-- Pagination --}}
+                <tbody>
+                    @foreach($quotes as $quote)
+                        <tr>
+                            <td class="text-wrap" style="white-space: normal;">
+                                {{ $quote->security?->name }}
+                                <div class="text-muted small">
+                                    {{ $quote->quote_date->format('d-m-Y') }}
+                                </div>
+                            </td>
+
+                            <td class="text-end" style="width: 1%; white-space: nowrap;">
+                                {{ number_format($quote->price, 4) }}
+                                <div class="text-muted small">
+                                    {{ $quote->security?->currency?->name ?? '' }}
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
         <div class="card-footer">
-            {{ $quotes->appends(request()->query())->links() }}
+{{ $quotes->appends(request()->query())->onEachSide(0)->links('pagination::bootstrap-5') }}
         </div>
     @endif
 </div>
