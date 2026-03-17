@@ -16,7 +16,7 @@ class StockSplit extends Model
 
     protected $casts = [
         'split_date' => 'date',
-        'split_factor' => 'decimal:4',
+        'split_factor' => 'decimal:6',
     ];
 
     // -----------------------------------------

@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RollupController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\StockSplitController;
+use App\Http\Controllers\QuoteController;
 
 // Welcome page (public)
 Route::get('/', function () {
@@ -51,6 +52,9 @@ Route::middleware('auth')->group(function () {
     // Securities
     Route::resource('securities', SecurityController::class);
     Route::resource('stock-splits', StockSplitController::class);
+    Route::get('/quotes/import', [QuoteController::class, 'showImportForm'])->name('quotes.import');
+    Route::post('/quotes/import', [QuoteController::class, 'import'])->name('quotes.import.process');
+    Route::resource('quotes', QuoteController::class);
 
     // PROFILES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

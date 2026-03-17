@@ -70,6 +70,13 @@
                     </li>
 
                     <li class="nav-item">
+                        <a href="{{ route('quotes.index') }}" 
+                           class="nav-link {{ request()->is('quotes*') ? 'active text-white fw-bold' : 'text-white' }}">
+                            <i class="bi bi-cash-coin"></i> Quotes
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a href="{{ route('categories.index') }}" 
                            class="nav-link {{ request()->is('categories*') ? 'active text-white fw-bold' : 'text-white' }}">
                             <i class="bi bi-tags"></i> Categories

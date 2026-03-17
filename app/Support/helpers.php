@@ -55,3 +55,32 @@ if (! function_exists('isZeroAmount')) {
         return $rounded == 0.0;
     }
 }
+
+use Carbon\Carbon;
+
+function parseDateSmart(string $value): ?string
+{
+    $value = trim($value);
+
+    // 1) dd.mm.yyyy or d.m.yyyy
+    if (preg_match('/^\d{1,2}\.\d{1,2}\.\d{4}$/', $value)) {
+        return Carbon::createFromFormat('d.m.Y', $value)->format('Y-m-d');
+    }
+
+    // 2) dd/mm/yyyy or d/m/yyyy
+    if (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $value)) {
+        return Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+    }
+
+    // 3) yyyy-mm-dd (ISO)
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        return $value; // already correct
+    }
+
+    // 4) Try Carbon's auto-parser (last resort)
+    try {
+        return Carbon::parse($value)->format('Y-m-d');
+    } catch (\Exception $e) {
+        return null;
+    }
+}

@@ -12,7 +12,7 @@ class Security extends Model
     use HasFactory;
 
     public const ASSET_CLASSES = [
-        'SH' => 'Share',
+        'EQ' => 'Equity',
         'OP' => 'Option',
         'CM' => 'Commodity',
         'FX' => 'Currency',
@@ -115,6 +115,11 @@ class Security extends Model
     public function splitsTo(): HasMany
     {
         return $this->hasMany(StockSplit::class, 'new_id');
+    }
+
+    public function quotes()
+    {
+        return $this->hasMany(Quote::class);
     }
 
     /**
