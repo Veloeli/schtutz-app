@@ -70,6 +70,7 @@ class TeamController extends Controller
     public function update(Request $request, Team $team)
     {
         $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
             'has_common_financials' => 'required|boolean',
             'has_common_reporting' => 'required|boolean',
             'has_common_securities' => 'required|boolean',

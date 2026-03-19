@@ -11,14 +11,19 @@ class Category extends Model
 {
     use HasFactory;
     
-    public const TYPES = [
-        'EX' => 'Expenses',
-        'IN' => 'Income',
-        'IC' => 'Capital Income',
+    public const BSTYPES = [
         'AL' => 'Asset or Liability',
         'AP' => 'Asset Portfolio',
         'CL' => 'Clearing Account',
     ];
+
+    public const PLTYPES = [
+        'EX' => 'Expenses',
+        'IN' => 'Income',
+        'IC' => 'Capital Income',
+    ];
+
+    public const TYPES = [...self::BSTYPES, ...self::PLTYPES];
 
     protected $fillable = [
         'name',

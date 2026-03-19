@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\Paginator;
+use App\Models\RollupCategory;
+use App\Observers\RollupCategoryObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RollupCategory::observe(RollupCategoryObserver::class);
+        
         Paginator::useBootstrap();
         require_once app_path('Support/helpers.php');
 

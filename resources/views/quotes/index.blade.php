@@ -96,8 +96,8 @@
             </table>
         </div>
 
-        <div class="card-footer">
-{{ $quotes->appends(request()->query())->onEachSide(0)->links('pagination::bootstrap-5') }}
+        <div class="pagination-sm >
+            {{ $quotes->appends(request()->query())->onEachSide(0)->links('pagination::bootstrap-5') }}
         </div>
     @endif
 </div>
