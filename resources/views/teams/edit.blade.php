@@ -140,9 +140,9 @@
 
                             • Sharing Ratio: <strong>{{ $membership->sharing_ratio + 0 }} of {{ $team->sharing_ratio_sum + 0}}</strong>
 
-                            @if($membership->clearing_account !== null) 
-                                • Clearing: <strong>{{ $membership->clearing_account }}</strong>
-                            @endif                    
+                            @if ($membership->clearingAccount)
+                                • Clearing Account: <strong>{{ $membership->clearingAccount->name }}</strong>
+                            @endif
 
                             @if($membership->member_from !== null) 
                                 • Member from: <strong>{{ $membership->member_from->format('d.m.Y') }}</strong>
