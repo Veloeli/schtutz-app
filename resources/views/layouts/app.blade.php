@@ -57,7 +57,7 @@
         <div class="offcanvas-md offcanvas-start bg-dark text-white"
              tabindex="-1"
              id="sidebar"
-             style="width: 180px;">
+             style="width: 200px;">
 
             <div class="offcanvas-body p-3">
 
