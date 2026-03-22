@@ -54,23 +54,23 @@ class DocumentItemController extends Controller
         return redirect()->route('documents.index', $document);
     }
 
-public function edit(Document $document, Item $item)
-{
-    $user = auth()->user();
+    public function edit(Document $document, Item $item)
+    {
+        $user = auth()->user();
 
-    // Load categories visible to the user on the document date
-    $categories = $this->categories->visibleForDocument($user, $document)
-        ->sortBy('full_path');
+        // Load categories visible to the user on the document date
+        $categories = $this->categories->visibleForDocument($user, $document)
+            ->sortBy('full_path');
 
-    // Load the item's current category so Blade can access it
-    $item->load('category');
+        // Load the item's current category so Blade can access it
+        $item->load('category');
 
-    return view('documents.items.edit', [
-        'document' => $document,
-        'item' => $item,
-        'categories' => $categories,
-    ]);
-}
+        return view('documents.items.edit', [
+            'document' => $document,
+            'item' => $item,
+            'categories' => $categories,
+        ]);
+    }
 
     public function update(Request $request, Document $document, Item $item)
     {

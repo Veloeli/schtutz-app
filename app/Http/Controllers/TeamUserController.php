@@ -55,6 +55,7 @@ class TeamUserController extends Controller
     {
         $clearingAccounts = Category::where('type', 'CL')
             ->whereNull('team_id')
+            ->where('user_id', $membership->user->id)
             ->orderBy('code')
             ->get();
 

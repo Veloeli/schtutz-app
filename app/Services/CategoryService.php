@@ -55,7 +55,7 @@ class CategoryService
         // Determine the root rollup for this user/team
         $rootId = optional($this->resolveRootRollup($user))->id;
 
-        // 1. Fetch visible categories (your existing logic)
+        // 1. Fetch visible categories
         $categories = Category::query()
             ->select('categories.*')
             ->with(['team', 'owner'])

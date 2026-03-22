@@ -7,7 +7,7 @@
     <h2 class="mb-4">Teams</h2>
 
     <a href="{{ route('teams.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Add Team
+        <i class="bi bi-plus-circle"></i> New
     </a>
 </div>
 

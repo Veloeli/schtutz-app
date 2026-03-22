@@ -7,7 +7,7 @@
     <h2 class="mb-4">Categories</h2>
 
     <a href="{{ route('categories.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Add Category
+        <i class="bi bi-plus-circle"></i> New
     </a>
 </div>
 
