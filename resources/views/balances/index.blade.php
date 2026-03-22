@@ -51,7 +51,7 @@
                                     <span class="badge bg-secondary">
                                         {{ $row->team->name }}
                                     </span>
-                                @elseif($row->category_id && $row->category->owner->id !== auth()->id()))
+                                @elseif($row->category_id && $row->category->owner->id !== auth()->id())
                                     <span class="badge bg-secondary">
                                         {{ $row->category->owner->name}}
                                     </span>
