@@ -15,17 +15,16 @@
     </a>
 </div>
 
-<div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+<form method="GET" action="{{ route('documents.index') }}" class="d-flex align-items-center gap-3 mb-3 flex-wrap">
     <!-- Month Selector -->
-    <x-month-picker name="month" :value="$month" />
+    <x-month-selector name="month" :value="$month" />
 
     <!-- User/Team Selector -->
     <x-user-team-selector
-        :teams="$teams"
-        :members="$members"
-        :filter="$filter"
+        :action="route('documents.index')"
+        :teamfilter="$teamfilter"
     />
-</div>
+</form>
 
 
 <!-- Documents Table -->

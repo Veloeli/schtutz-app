@@ -14,42 +14,9 @@ class RollupController extends Controller
         protected RollupService $service
     ) {}
 
-    public function index(Request $request)
+    public function index()
     {
-        $user = auth()->user();
-        $rootRollups = Rollup::whereNull('parent_id')->get();
-        $selectedRoot = null;
-
-        // 1. URL root_id hat höchste Priorität
-        if ($request->filled('root_id')) {
-            $selectedRoot = $rootRollups->firstWhere('id', $request->root_id);
-
-            if ($selectedRoot) {
-                // Session aktualisieren
-                $request->session()->put('root_id', $selectedRoot->id);
-            }
-        }
-
-        // 2. Falls keine URL, aber Session vorhanden
-        if (!isset($selectedRoot) && $request->session()->has('root_id')) {
-            $selectedRoot = $rootRollups->firstWhere('id', $request->session()->get('root_id'));
-        }
-
-        // 3. Falls keine Session, aber User‑Preference
-        if (!isset($selectedRoot) && $user->preferred_root_id) {
-            $selectedRoot = $rootRollups->firstWhere('id', $user->preferred_root_id);
-            if ($selectedRoot) {
-                $request->session()->put('root_id', $selectedRoot->id);
-            }
-        }
-
-        // 4. Fallback: erster Root
-        if (!isset($selectedRoot) && $rootRollups->isNotEmpty()) {
-            $selectedRoot = $rootRollups->first();
-            $request->session()->put('root_id', $selectedRoot->id);
-        }
-
-        return view('rollups.index', compact('rootRollups', 'selectedRoot'));
+        return view('rollups.index');
     }
 
     /*

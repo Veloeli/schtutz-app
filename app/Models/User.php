@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Http\Request;
 
 class User extends Authenticatable
 {
@@ -98,17 +99,64 @@ class User extends Authenticatable
         return $this->belongsTo(Rollup::class, 'preferred_root_id');
     }
 
+    public function resolveActiveRoot(Request $request)
+    {
+        $rootRollups = Rollup::whereNull('parent_id')->get();
+        $selectedRoot = null;
+
+        // 1. URL parameter
+        if ($request->filled('root_id')) {
+            $selectedRoot = $rootRollups->firstWhere('id', $request->root_id);
+            if ($selectedRoot) {
+                $request->session()->put('root_id', $selectedRoot->id);
+            }
+        }
+
+        // 2. Session
+        if (!$selectedRoot && $request->session()->has('root_id')) {
+            $selectedRoot = $rootRollups->firstWhere('id', $request->session()->get('root_id'));
+        }
+
+        // 3. User preference
+        if (!$selectedRoot && $this->preferred_root_id) {
+            $selectedRoot = $rootRollups->firstWhere('id', $this->preferred_root_id);
+            if ($selectedRoot) {
+                $request->session()->put('root_id', $selectedRoot->id);
+            }
+        }
+
+        // 4. Fallback
+        if (!$selectedRoot && $rootRollups->isNotEmpty()) {
+            $selectedRoot = $rootRollups->first();
+            $request->session()->put('root_id', $selectedRoot->id);
+        }
+
+        return $selectedRoot;
+    }
+
     /**
      * Usage:
      * $teams = $user->teamsWithSecurities()->get();
      * $members = User::inTeams($teams)->get();
+     * $members = User::inRevealsTo($teams)->get();
      */
     public function scopeInTeams($query, $teams)
     {
         return $query->whereIn('id', function ($q) use ($teams) {
             $q->select('user_id')
               ->from('team_user')
-              ->whereIn('team_id', $teams->pluck('id'))
+              ->whereIn('team_id', $teams->pluck('team_user.id'))
+              ->distinct();
+        });
+    }
+
+    public function scopeInRevealsTo($query, $teams)
+    {
+        return $query->whereIn('id', function ($q) use ($teams) {
+            $q->select('user_id')
+              ->from('team_user')
+              ->whereIn('team_id', $teams->pluck('team_user.id'))
+              ->where('reveal_private', 1)
               ->distinct();
         });
     }

@@ -17,6 +17,6 @@ class MonthPicker extends Component
 
     public function render()
     {
-        return view('components.month-picker');
+        return view('components.month-selector');
     }
 }

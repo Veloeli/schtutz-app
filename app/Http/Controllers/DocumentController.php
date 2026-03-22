@@ -23,35 +23,24 @@ class DocumentController extends Controller
             session(['document_month' => $request->month]);
         }
 
-        // Store filter if provided
-        if ($request->filled('filter')) {
-            session(['document_filter' => $request->filter]);
+        // Store teamfilter if provided
+        if ($request->filled('teamfilter')) {
+            session(['document_teamfilter' => $request->teamfilter]);
         }
 
         // Retrieve stored values (fallbacks if none stored)
         $month = session('document_month', now()->format('Y-m'));
-        $filter = session('document_filter', 'all');
+        $teamfilter = session('document_teamfilter', 'all');
 
         $user = auth()->user();
 
-        // Filter documents using the service (which uses the policy)
-        $documents = $this->documents->visibleFor($user, $month, $filter);
-
-        $teams = $user->teamsWithFinancials()->get();
-
-        $members = User::whereIn('id', function ($q) use ($teams) {
-            $q->select('user_id')
-              ->from('team_user')
-              ->whereIn('team_id', $teams->pluck('id'))
-              ->distinct();
-        })->get();
+        // teamfilter documents using the service (which uses the policy)
+        $documents = $this->documents->visibleFor($user, $month, $teamfilter);
 
         return view('documents.index', [
             'documents' => $documents,
             'month' => $month,
-            'filter' => $filter,
-            'teams' => $teams,
-            'members' => $members,
+            'teamfilter' => $teamfilter,
         ]);
     }
 
@@ -93,10 +82,10 @@ class DocumentController extends Controller
         // Expand the newly created document in the UI
         session()->put("expanded_docs.{$document->id}", true);
 
-        // If a team filter is active, reset it to "all" (else the new document would not be visible)
-        $filter = session('document_filter', 'all');
-        if (str_starts_with($filter, 'team-')) {
-            session(['document_filter' => 'all']);
+        // If a team teamfilter is active, reset it to "all" (else the new document would not be visible)
+        $teamfilter = session('document_teamfilter', 'all');
+        if (str_starts_with($teamfilter, 'team-')) {
+            session(['document_teamfilter' => 'all']);
         }
 
         // Set the month in session based on the document date

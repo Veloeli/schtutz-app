@@ -164,8 +164,6 @@
                                 Edit
                             </a>
                         </div>
-                    @else
-                            ({{ $member->name }})
                     @endcan
                 </li>
             @endforeach

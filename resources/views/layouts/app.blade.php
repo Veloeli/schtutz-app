@@ -63,6 +63,13 @@
 
                 <ul class="nav flex-column gap-1">
                     <li class="nav-item">
+                        <a href="{{ route('balances.index') }}" 
+                           class="nav-link {{ request()->is('balances*') ? 'active text-white fw-bold' : 'text-white' }}">
+                            <i class="bi bi-piggy-bank"></i> Balances
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a href="{{ route('documents.index') }}" 
                            class="nav-link {{ request()->is('documents*') ? 'active text-white fw-bold' : 'text-white' }}">
                             <i class="bi bi-file-earmark-text"></i> Documents

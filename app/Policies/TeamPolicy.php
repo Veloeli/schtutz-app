@@ -9,31 +9,6 @@ use Illuminate\Auth\Access\Response;
 
 class TeamPolicy
 {
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Team $team): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return false;
-    }
-
     public function update(User $user, Team $team)
     {
         return $user->id === $team->owner_id 
@@ -46,21 +21,4 @@ class TeamPolicy
             $user->id === $team->owner_id 
             || $user->teams->contains($team));
     }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Team $team): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Team $team): bool
-    {
-        return false;
-    }
-
 }

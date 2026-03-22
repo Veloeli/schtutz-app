@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Services\VisibilityService;
 
 class Rollup extends Model
 {
@@ -28,8 +27,8 @@ class Rollup extends Model
                 return;
             }
 
-            $teamIds = VisibilityService::allowedTeamIds($user);
-
+            $teamIds = $user->teamsWithReporting()->pluck('teams.id');
+           
             // 1. Find visible root rollups
             $rootIds = Rollup::withoutGlobalScopes()
                 ->whereNull('parent_id')

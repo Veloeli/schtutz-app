@@ -5,39 +5,34 @@
 @endphp
 
 <style>
-    .month-picker .month-display {
-        flex: 0 0 80px; /* fixed width */
+    .month-selector .month-display {
+        flex: 0 0 80px;
         text-align: center;
     }
-    .month-picker .btn {
+    .month-selector .btn {
         padding: 2px 8px;
         line-height: 1.1;
     }
-    .month-picker {
-        margin-bottom: 1rem; /* or 1.5rem, 2rem, etc. */
-    }
 </style>
 
-<div class="d-flex align-items-center gap-3 month-picker">
+<div class="d-flex align-items-center gap-3 month-selector w-auto">
     <button type="button" class="btn btn-secondary month-prev">&lt;</button>
 
     <div class="month-display"></div>
 
     <button type="button" class="btn btn-secondary month-next">&gt;</button>
 
-    <form method="GET" class="month-form">
-        <input type="hidden" name="month" class="month-hidden">
-    </form>
+    <!-- Hidden input now belongs to the OUTER form -->
+    <input type="hidden" name="month" class="month-hidden">
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.month-picker').forEach(picker => {
-        const display = picker.querySelector('.month-display');
-        const hidden = picker.querySelector('.month-hidden');
-        const prev = picker.querySelector('.month-prev');
-        const next = picker.querySelector('.month-next');
-        const form = picker.querySelector('.month-form');
+    document.querySelectorAll('.month-selector').forEach(selector => {
+        const display = selector.querySelector('.month-display');
+        const hidden = selector.querySelector('.month-hidden');
+        const prev = selector.querySelector('.month-prev');
+        const next = selector.querySelector('.month-next');
 
         let current = new Date("{{ $initial }}");
 
@@ -53,21 +48,21 @@ document.addEventListener('DOMContentLoaded', () => {
             hidden.value = `${year}-${month}`;
 
             if (submit) {
-                form.submit();
+                hidden.form.submit(); // submit the OUTER form
             }
         }
 
         prev.addEventListener('click', () => {
             current.setMonth(current.getMonth() - 1);
-            updateUI(true); // submit after change
+            updateUI(true);
         });
 
         next.addEventListener('click', () => {
             current.setMonth(current.getMonth() + 1);
-            updateUI(true); // submit after change
+            updateUI(true);
         });
 
-        updateUI(false); // initial render only
+        updateUI(false);
     });
 });
 </script>

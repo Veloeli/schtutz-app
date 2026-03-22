@@ -4,7 +4,7 @@
     <li class="list-group-item d-flex align-items-center">
         <!-- LEFT: Name -->
         <div class="flex-grow-1">
-            <span class="fw-bold">{{ $node->name }}</span>
+            <span>{{ $node->name }}</span>
         </div>
 
         <!-- MIDDLE: Code (left aligned, fixed width so all codes align vertically) -->

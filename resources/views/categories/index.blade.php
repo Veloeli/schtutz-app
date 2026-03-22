@@ -11,14 +11,14 @@
     </a>
 </div>
 
-<div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+<form method="GET" action="{{ route('categories.index') }}" class="d-flex align-items-center gap-3 mb-3 flex-wrap">
     <!-- User/Team Selector -->
     <x-user-team-selector
         :teams="$teams"
         :members="$members"
         :filter="$filter"
     />
-</div>
+</form>
 
 <!-- Categories Table -->
 @if($categories->isEmpty())

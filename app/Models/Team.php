@@ -45,8 +45,15 @@ class Team extends Model
     public function members()
     {
         return $this->belongsToMany(User::class, 'team_user')
-            ->withPivot('id', 'reveal_private', 'sharing_ratio', 'clearing_account', 'member_from', 'member_to')
+            ->withPivot('reveal_private', 'sharing_ratio', 'clearing_account', 'member_from', 'member_to')
             ->withTimestamps();
+    }
+
+    public function revealedMembers()
+    {
+        return $this->belongsToMany(User::class, 'team_user')
+            ->withPivot('reveal_private', 'sharing_ratio', 'clearing_account', 'member_from', 'member_to')
+            ->wherePivot('reveal_private', 1);
     }
 
     public function rollups()

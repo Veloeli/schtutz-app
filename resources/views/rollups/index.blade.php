@@ -13,16 +13,9 @@
 </div>
 
 {{-- Root selector --}}
-<form method="GET" action="{{ route('rollups.index') }}" name="dropdown" class="mb-4">
-    <div class="w-auto" style="max-width: 300px;">
-        <select name="root_id" id="root_id" class="form-select" onchange="this.form.submit()">
-            @foreach ($rootRollups as $root)
-                <option value="{{ $root->id }}" @selected($selectedRoot && $selectedRoot->id === $root->id)>
-                    {{ $root->name }}
-                </option>
-            @endforeach
-        </select>
-    </div>
+<form method="GET" action="{{ route('rollups.index') }}" class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+    <x-root-selector />
+    @php($selectedRoot = $component->selectedRoot)
 </form>
 
 {{-- Rollup tree --}}
