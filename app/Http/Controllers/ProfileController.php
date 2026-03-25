@@ -35,12 +35,14 @@ class ProfileController extends Controller
         $validated = $request->validated();
 
         $request->validate([
-            'preferred_root_id' => ['nullable', 'exists:rollups,id'],
+            'preferred_root_id' => 'nullable|exists:rollups,id',
+            'freeze_after'      => 'required|integer|between:1,120',
         ]);
 
         $user = $request->user();
         $user->fill($validated);
         $user->preferred_root_id = $request->preferred_root_id;
+        $user->freeze_after = $request->freeze_after;
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;

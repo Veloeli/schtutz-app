@@ -51,6 +51,10 @@ class VisibilityService
             return false;
         }
 
+        if (self::isFrozen($document)) {
+            return false;
+        }
+
         return self::allowedUserIds($user)->contains($document->owner_id);
     }
 
@@ -59,7 +63,22 @@ class VisibilityService
         if ($item->document->wizard) {
             return false;
         }
-        
+
+        if (self::isFrozen($item->document)) {
+            return false;
+        }
+
         return self::allowedUserIds($user)->contains($item->document->owner_id);
+    }
+
+    protected static function isFrozen(Document $document): bool
+    {
+        if (!$document->owner->freeze_after) {
+            return false; // no freeze rule for this user
+        }
+
+        $freezeDate = now()->subMonths($document->owner->freeze_after);
+
+        return $document->posting_date < $freezeDate;
     }
 }

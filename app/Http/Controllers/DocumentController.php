@@ -66,6 +66,13 @@ class DocumentController extends Controller
             'posting_date'  => 'required|date',
         ]);
 
+        // Freeze-after check
+        if ($this->isPostingDateFrozen($request->user(), $validated['posting_date'])) {
+            return back()
+                ->withErrors(['posting_date' => 'This posting date is too old and cannot be used.'])
+                ->withInput();
+        }
+
         // Hidden defaults
         $validated['repeat_pattern']  = 0;
         $validated['repeat_constant'] = 0;
@@ -123,6 +130,13 @@ class DocumentController extends Controller
             'repeat_constant'  => 'required|boolean',
         ]);
 
+        // Freeze-after check
+        if ($this->isPostingDateFrozen($request->user(), $validated['posting_date'])) {
+            return back()
+                ->withErrors(['posting_date' => 'This posting date is too old and cannot be used.'])
+                ->withInput();
+        }
+
         if ((int) $validated['repeat_pattern'] === 0) {
             $validated['repeat_constant'] = 0;
         }
@@ -160,5 +174,16 @@ class DocumentController extends Controller
         session(['expanded_docs' => $state]);
 
         return response()->json(['ok' => true]);
+    }
+
+    protected function isPostingDateFrozen(User $user, string $postingDate): bool
+    {
+        if (!$user->freeze_after) {
+            return false;
+        }
+
+        $freezeDate = now()->subMonths($user->freeze_after);
+
+        return \Carbon\Carbon::parse($postingDate)->lt($freezeDate);
     }
 }

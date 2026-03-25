@@ -11,11 +11,16 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    protected $attributes = [
+        'freeze_after' => 3,
+    ];
+
     protected $fillable = [
         'name',
         'email',
         'password',
         'preferred_root_id',
+        'freeze_after',
     ];
 
     protected $hidden = [

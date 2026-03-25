@@ -13,16 +13,15 @@
 
 
 {{-- PERSONAL INFORMATION --}}
-<div class="card mb-4">
-    <div class="card-header">
-        Personal Information
-    </div>
+<form method="POST" action="{{ route('profile.update') }}">
+    @csrf
+    @method('PATCH')
+    <div class="card mb-4">
+        <div class="card-header">
+            Personal Information
+        </div>
 
-    <div class="card-body">
-        <form method="POST" action="{{ route('profile.update') }}">
-            @csrf
-            @method('PATCH')
-
+        <div class="card-body">
             <div class="mb-3">
                 <label class="form-label">Name</label>
                 <input type="text"
@@ -38,7 +37,15 @@
                        class="form-control"
                        value="{{ old('email', auth()->user()->email) }}">
             </div>
+        </div>
+    </div>
 
+    <div class="card mb-4">
+        <div class="card-header">
+            Preferences
+        </div>
+    
+        <div class="card-body">
             <div class="mb-3">
                 <label class="form-label">Preferred Rollup Hierarchy</label>
                 <select name="preferred_root_id" class="form-select">
@@ -52,10 +59,23 @@
                     @endforeach
                 </select>
             </div>
-
-            <button class="btn btn-primary">Save</button>
-        </form>
+            <div class="mb-3">
+                <label class="form-label">Freeze Documents after (months)</label>
+                <input type="number"
+                       step="1"
+                       name="freeze_after"
+                       class="form-control"
+                       value="{{ old('freeze_after', auth()->user()->freeze_after) }}">
+            </div>
+        </div>
     </div>
-</div>
+
+    <div class="d-flex justify-content-between mt-4">
+        <div class="d-flex gap-2">
+            <!-- Save -->
+            <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+    </div>
+</form>
 
 @endsection
