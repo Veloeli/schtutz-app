@@ -20,7 +20,7 @@ class TeamMembershipUiTest extends TestCase
 
         // Team owned by Andrea
         $team = Team::factory()->create([
-            'owner_id' => $andrea->id,
+            'user_id' => $andrea->id,
         ]);
 
         // Members: Peter + Andrea

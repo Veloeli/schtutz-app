@@ -11,7 +11,7 @@ class ItemService
     {
         // Load all items with their relationships
         $items = Item::with('document', 'category')->get();
-
+dd('hi!');
         // Filter using the ItemPolicy
         return $items->filter(function ($item) use ($user) {
             return Gate::forUser($user)->allows('view', $item);

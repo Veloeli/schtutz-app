@@ -13,7 +13,7 @@ class TeamFactory extends Factory
     public function definition()
     {
         return [
-            'owner_id' => User::factory(),
+            'user_id' => User::factory(),
             'name' => $this->faker->company . ' Team',
         ];
     }
@@ -21,7 +21,7 @@ class TeamFactory extends Factory
     public function forUser(User $user)
     {
         return $this->state(fn () => [
-            'owner_id' => $user->id,
+            'user_id' => $user->id,
         ]);
     }
 }

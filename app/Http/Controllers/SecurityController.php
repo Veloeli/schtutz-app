@@ -10,7 +10,7 @@ class SecurityController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Security::with(['team','owner']);
+        $query = Security::with(['team','user']);
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {

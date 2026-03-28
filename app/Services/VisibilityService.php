@@ -55,29 +55,16 @@ class VisibilityService
             return false;
         }
 
-        return self::allowedUserIds($user)->contains($document->owner_id);
-    }
-
-    public static function canEditItem(User $user, Item $item)
-    {
-        if ($item->document->wizard) {
-            return false;
-        }
-
-        if (self::isFrozen($item->document)) {
-            return false;
-        }
-
-        return self::allowedUserIds($user)->contains($item->document->owner_id);
+        return self::allowedUserIds($user)->contains($document->user_id);
     }
 
     protected static function isFrozen(Document $document): bool
     {
-        if (!$document->owner->freeze_after) {
+        if (!$document->user->freeze_after) {
             return false; // no freeze rule for this user
         }
 
-        $freezeDate = now()->subMonths($document->owner->freeze_after);
+        $freezeDate = now()->subMonths($document->user->freeze_after);
 
         return $document->posting_date < $freezeDate;
     }

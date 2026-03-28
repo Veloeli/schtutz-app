@@ -32,7 +32,7 @@ class CategoryService
             ->when($filterType === 'member', function ($q) use ($filterId) {
                 $q->where('user_id', $filterId);
             })
-            ->with(['team', 'owner'])
+            ->with(['team', 'user'])
             ->get();
 
         return $categories;
@@ -50,7 +50,7 @@ class CategoryService
     private function queryVisibleForDocument(User $user, Document $document): Collection
     {
         $date = $document->posting_date;
-        $ownerId = $document->owner_id;
+        $userId = $document->user_id;
 
         // Determine the root rollup for this user/team
         $rootId = optional($this->resolveRootRollup($user))->id;
@@ -58,14 +58,14 @@ class CategoryService
         // 1. Fetch visible categories
         $categories = Category::query()
             ->select('categories.*')
-            ->with(['team', 'owner'])
+            ->with(['team', 'user'])
 
             // joins for users and teams
             ->leftJoin('users', 'categories.user_id', '=', 'users.id')
             ->leftJoin('teams', 'categories.team_id', '=', 'teams.id')
-            ->leftJoin('team_user', function ($join) use ($ownerId) {
+            ->leftJoin('team_user', function ($join) use ($userId) {
                 $join->on('team_user.team_id', '=', 'teams.id')
-                     ->where('team_user.user_id', '=', $ownerId);
+                     ->where('team_user.user_id', '=', $userId);
             })
 
             // Existing rules
@@ -83,8 +83,8 @@ class CategoryService
                                 and coalesce(team_user.member_to, "2999-12-31")', [$date])
 
             // Category ownership
-            ->where(function ($q) use ($ownerId) {
-                $q->where('categories.user_id', $ownerId)
+            ->where(function ($q) use ($userId) {
+                $q->where('categories.user_id', $userId)
                   ->orWhereNotNull('categories.team_id');
             })
 

@@ -54,9 +54,9 @@
                         <div class="text-muted small">
                             {{ $doc->posting_date->format('d.m.Y') }}
 
-                            @if($doc->owner_id !== auth()->id())
+                            @if($doc->user_id !== auth()->id())
                                 <span class="badge bg-secondary">
-                                    {{ $doc->owner->name }}
+                                    {{ $doc->user->name }}
                                 </span>
                             @endif
                             @if (!isZeroAmount($doc->amount_sum))
@@ -69,10 +69,15 @@
 
                     <td style="width: 1%; white-space: nowrap;">
                         @can('update', $doc)
-                        <a href="{{ route('documents.edit', $doc) }}"
+                        <a href="{{ route('documents.edit', $doc) }}" 
+                           id="edit-document-{{ $doc->id }}"
                            class="btn btn-sm btn-primary">
                             Edit
                         </a>
+                        @else
+                            <span id="view-document-{{ $doc->id }}" class="text-muted">
+                                
+                            </span>
                         @endcan
                     </td>
                 </tr>
@@ -109,9 +114,9 @@
                                                                     <span class="badge bg-secondary">
                                                                         {{ $item->category->team->name }}
                                                                     </span>
-                                                                @elseif($doc->owner_id !== auth()->id())
+                                                                @elseif($doc->user_id !== auth()->id())
                                                                     <span class="badge bg-secondary">
-                                                                        {{ $doc->owner->name }}
+                                                                        {{ $doc->user->name }}
                                                                     </span>
                                                                 @endif
                                                                 {{ $item->category->name }}
@@ -131,9 +136,14 @@
                                                         <div class="col-3 text-end">
                                                             @can('update', $item)
                                                             <a href="{{ route('documents.items.edit', [$doc, $item]) }}"
+                                                               id="edit-item-{{ $item->id }}"
                                                                class="btn btn-sm btn-primary">
                                                                 Edit
                                                             </a>
+                                                            @else
+                                                                <span id="view-item-{{ $item->id }}" class="text-muted">
+                                                                    
+                                                                </span>
                                                             @endcan
                                                         </div>
 

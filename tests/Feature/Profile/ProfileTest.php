@@ -33,7 +33,7 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
-                'freeze_after' => 3,
+                'freeze_after' => 2,
             ]);
 
         $response
@@ -44,6 +44,7 @@ class ProfileTest extends TestCase
 
         $this->assertSame('Test User', $user->name);
         $this->assertSame('test@example.com', $user->email);
+        $this->assertSame(2, $user->freeze_after);
         $this->assertNull($user->email_verified_at);
     }
 

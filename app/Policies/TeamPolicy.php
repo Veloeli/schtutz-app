@@ -11,14 +11,14 @@ class TeamPolicy
 {
     public function update(User $user, Team $team)
     {
-        return $user->id === $team->owner_id 
+        return $user->id === $team->userid 
             || $user->teams->contains($team);
     }
 
     public function delete(User $user, Team $team)
     {
         return $team->members->count() === 0 && (
-            $user->id === $team->owner_id 
+            $user->id === $team->user_id 
             || $user->teams->contains($team));
     }
 }

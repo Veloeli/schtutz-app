@@ -81,7 +81,7 @@ class Security extends Model
         });
     }
 
-    public function owner()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
@@ -141,7 +141,7 @@ class Security extends Model
             return null;
         }
 
-        return $this->owner?->name;
+        return $this->user?->name;
     }
 
     public function linkUnless(Security $current): string

@@ -11,7 +11,7 @@ class Team extends Model
 
     protected $fillable = [
         'name',
-        'owner_id',
+        'user_id',
         'has_common_financials',
         'has_common_reporting',
         'has_common_securities',
@@ -27,14 +27,14 @@ class Team extends Model
     protected static function booted()
     {
         static::created(function (Team $team) {
-            // Automatically add the owner as a member
-            $team->members()->attach($team->owner_id);
+            // Automatically add the user as a member
+            $team->members()->attach($team->user);
         });
     }
 
-    public function owner()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'owner_id');
+        return $this->belongsTo(User::class);
     }  
 
     public function memberships()

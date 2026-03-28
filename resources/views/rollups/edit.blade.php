@@ -119,7 +119,7 @@
                                 </span>
                             @elseif($category->user_id !== auth()->id())
                                 <span class="badge bg-secondary">
-                                    {{ $category->owner->name }}
+                                    {{ $category->user->name }}
                                 </span>
                             @endif
                         </span>
@@ -158,7 +158,7 @@
                                     </span>
                                 @elseif($category->user_id !== auth()->id())
                                     <span class="badge bg-secondary">
-                                        [{{ $category->owner->name }}]
+                                        [{{ $category->user->name }}]
                                     </span>
                                 @endif
                                 </option>

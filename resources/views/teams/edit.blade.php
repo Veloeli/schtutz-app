@@ -24,18 +24,18 @@
                 <label class="form-label">Owner</label>
                 @php
                     // Always include the owner
-                    $owner = $team->owner;
+                    $user = $team->user;
 
                     // Combine owner + members, remove duplicates by ID
-                    $selectableUsers = collect([$owner])
+                    $selectableUsers = collect([$user])
                         ->merge($team->members)
                         ->unique('id');
                 @endphp
 
-                <select name="owner_id" class="form-select" required>
+                <select name="user_id" class="form-select" required>
                     @foreach($selectableUsers as $user)
                         <option value="{{ $user->id }}"
-                            {{ old('owner_id', $team->owner_id) == $user->id ? 'selected' : '' }}>
+                            {{ old('user_id', $team->user_id) == $user->id ? 'selected' : '' }}>
                             {{ $user->name }} ({{ $user->email }})
                         </option>
                     @endforeach

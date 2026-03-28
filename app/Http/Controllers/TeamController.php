@@ -47,7 +47,7 @@ class TeamController extends Controller
             'name'        => ['required', 'string', 'max:255'],
         ]);
 
-        $validated['owner_id'] = auth()->id();
+        $validated['user_id'] = auth()->id();
 
         Team::create($validated);
 

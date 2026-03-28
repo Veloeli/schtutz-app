@@ -55,24 +55,24 @@ class CategoryIndexTest extends TestCase
 
         // Private category - other → SHOULD NOT be present
         $response->assertDontSee("edit-category-{$privateOther->id}");
-        $response->assertDontSee("owner-category-{$privateOther->id}");
+        $response->assertDontSee("user-category-{$privateOther->id}");
 
 /*
         // Salad → SHOULD have an edit button
         $response->assertSee("edit-category-{$salad->id}");
-        $response->assertDontSee("owner-category-{$salad->id}");
+        $response->assertDontSee("user-category-{$salad->id}");
 
         // Onion → SHOULD NOT have an edit button
-        $response->assertSee("owner-category-{$onion->id}");
+        $response->assertSee("user-category-{$onion->id}");
         $response->assertDontSee("edit-category-{$onion->id}");
 
         // Private category - self → SHOULD have an edit button
         $response->assertSee("edit-category-{$privateSelf->id}");
-        $response->assertDontSee("owner-category-{$privateSelf->id}");
+        $response->assertDontSee("user-category-{$privateSelf->id}");
         
         // Private category - other → SHOULD NOT be present
         $response->assertDontSee("edit-category-{$privateOther->id}");
-        $response->assertDontSee("owner-category-{$privateOther->id}");
+        $response->assertDontSee("user-category-{$privateOther->id}");
 */        
     }
 }

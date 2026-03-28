@@ -35,7 +35,7 @@
                 <label class="form-label">Document Owner</label>
                 <input type="text"
                        class="form-control"
-                       value="{{ $document->owner->name }}"
+                       value="{{ $document->user->name }}"
                        disabled>
             </div>
         </div>

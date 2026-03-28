@@ -34,10 +34,7 @@ class Rollup extends Model
                 ->whereNull('parent_id')
                 ->where(function ($q) use ($user, $teamIds) {
                     $q->whereIn('team_id', $teamIds)
-                      ->orWhere(function ($q2) use ($user) {
-                          $q2->whereNull('team_id')
-                             ->where('user_id', $user->id);
-                      });
+                      ->orWhere('user_id', $user->id);
                 })
                 ->pluck('id')
                 ->toArray();
@@ -130,7 +127,7 @@ class Rollup extends Model
         );
     }
 
-    public function owner()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

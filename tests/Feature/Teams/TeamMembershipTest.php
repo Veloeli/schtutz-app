@@ -15,31 +15,31 @@ class TeamMembershipTest extends TestCase
     #[Test]
     public function user_can_create_a_team()
     {
-        $owner = User::factory()->create();
+        $user = User::factory()->create();
 
-        $this->actingAs($owner);
+        $this->actingAs($user);
 
         $team = Team::factory()->create([
-            'owner_id' => $owner->id,
+            'user_id' => $user->id,
             'name' => 'My Test Team',
         ]);
 
         // Assertions
-        $this->assertEquals($owner->id, $team->owner_id);
-        $this->assertTrue($team->members->contains($owner));
+        $this->assertEquals($user->id, $team->user_id);
+        $this->assertTrue($team->members->contains($user));
         $this->assertCount(1, $team->members);
     }
 
     #[Test]
     public function user_can_add_second_team_member()
     {
-        $owner = User::factory()->create();
+        $user = User::factory()->create();
         $other = User::factory()->create();
 
-        $this->actingAs($owner);
+        $this->actingAs($user);
 
         $team = Team::factory()->create([
-            'owner_id' => $owner->id,
+            'user_id' => $user->id,
         ]);
 
         // Attach member
@@ -48,18 +48,18 @@ class TeamMembershipTest extends TestCase
         $team->load('members');
 
         $this->assertCount(2, $team->members);
-        $this->assertTrue($team->members->contains($owner));
+        $this->assertTrue($team->members->contains($user));
         $this->assertTrue($team->members->contains($other));
     }
 
     #[Test]
     public function other_user_can_change_membership_settings()
     {
-        $owner = User::factory()->create();
+        $user = User::factory()->create();
         $other = User::factory()->create();
 
         $team = Team::factory()->create([
-            'owner_id' => $owner->id,
+            'user_id' => $user->id,
         ]);
 
         // Attach member

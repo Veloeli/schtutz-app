@@ -78,7 +78,7 @@ class DocumentController extends Controller
         $validated['repeat_constant'] = 0;
 
         // Owner is always the current user
-        $validated['owner_id'] = $request->user()->id;
+        $validated['user_id'] = $request->user()->id;
 
         // Create the document
         $document = $this->documents->create($validated);

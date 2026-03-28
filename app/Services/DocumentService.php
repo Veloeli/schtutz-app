@@ -20,8 +20,6 @@ class DocumentService
             $month = Carbon::createFromFormat('Y-m', $month);
         }
 
-        $allowedUsers = VisibilityService::allowedUserIds($user);
-
         $start = $month->copy()->startOfMonth();
         $end   = $month->copy()->endOfMonth();
 
@@ -32,27 +30,28 @@ class DocumentService
 
         return Document::query()
             ->whereBetween('posting_date', [$start, $end])
-            ->where(function ($q) use ($allowedUsers) {
-                $q->whereIn('owner_id', $allowedUsers)
-                  ->orWhereHas('items.category'); // category global scope applies
-            })
             ->when($filterType === 'team', function ($q) use ($filterId) {
                 $q->whereHas('items.category.team', function ($q) use ($filterId) {
                     $q->where('teams.id', $filterId);
                 });
             })
             ->when($filterType === 'member', function ($q) use ($filterId) {
-                $q->where('owner_id', $filterId);
+                $q->where('user_id', $filterId);
             })
             ->with([
-                'owner',
+                'user:id,name,freeze_after',
                 'items' => function ($q) {
                     $q->whereHas('category')
-                      ->with('category.team')
-                      ->with('document');
+                      ->with([
+                          'category.team',
+                          'document.user:id,name,freeze_after'
+                      ]);
                 },
             ])
-            ->withSum('items as amount_sum', 'amount')
+            ->withSum([
+                'items as amount_sum' => fn ($q) =>
+                    $q->withoutGlobalScope('visibility')
+            ], 'amount')
             ->orderBy('posting_date', 'desc')
             ->get();
     }

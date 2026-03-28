@@ -59,7 +59,7 @@
                             Edit
                         </a>
                     @else
-                        <span id="owner-category-{{ $category->id }}" class="text-muted">
+                        <span id="user-category-{{ $category->id }}" class="text-muted">
                             
                         </span>
                     @endcan

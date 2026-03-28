@@ -51,7 +51,7 @@ class BalanceController extends Controller
             ->where('cp.root_id', $selectedRoot->id)
             ->where('d.posting_date', '<=', $selectedDate)
             ->when($filterType === 'member', function ($q) use ($filterValue) {
-                $q->where('d.owner_id', $filterValue);
+                $q->where('d.user_id', $filterValue);
             })
             ->when($filterType === 'team', function ($q) use ($filterValue) {
                 $q->where('cp.team_id', $filterValue);

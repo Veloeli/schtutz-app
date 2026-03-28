@@ -63,7 +63,7 @@ class CategoryController extends Controller
             'name'          => 'required|string|max:255',
             'team_id'       => 'nullable|exists:teams,id',
             'code'          => 'nullable|string|max:50',
-            'is_selectable' => 'required|boolean',
+            'is_selectable' => 'nullable|boolean',
             'type'          => 'required|in:EX,IN,IC,AL,AP,CL',
         ]);
 
