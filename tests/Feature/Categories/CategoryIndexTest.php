@@ -5,6 +5,7 @@ namespace Tests\Feature\Categories;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Team;
+use App\Models\TeamUser;
 use App\Models\Category;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -23,7 +24,9 @@ class CategoryIndexTest extends TestCase
         $other = User::factory()->create();   // owner of Onion + private
 
         // Add both users to the same team
-        $team->members()->attach([$self->id, $other->id]);
+        TeamUser::factory()->create(['team_id' => $team->id, 'user_id' => $self->id,]);
+        TeamUser::factory()->create(['team_id' => $team->id, 'user_id' => $other->id, 'reveal_private' => 1,]);
+//        $team->members()->attach([$self->id, $other->id]);
 
         // Team categories
         $salad = Category::factory()
@@ -53,26 +56,16 @@ class CategoryIndexTest extends TestCase
         $response->assertSee("edit-category-{$onion->id}");
         $response->assertSee("edit-category-{$privateSelf->id}");
 
-        // Private category - other → SHOULD NOT be present
+        // Private category - other and revealed - SHOULD NOT have edit button
         $response->assertDontSee("edit-category-{$privateOther->id}");
-        $response->assertDontSee("user-category-{$privateOther->id}");
+        $response->assertSee("user-category-{$privateOther->id}");
 
-/*
-        // Salad → SHOULD have an edit button
-        $response->assertSee("edit-category-{$salad->id}");
-        $response->assertDontSee("user-category-{$salad->id}");
+        // other private (revealed) and team - should have badge
+        $response->assertSee("badge-{$salad->id}");  // team badge
+        $response->assertSee("badge-{$onion->id}");  // team badge
+        $response->assertSee("badge-{$privateOther->id}"); // user badge
 
-        // Onion → SHOULD NOT have an edit button
-        $response->assertSee("user-category-{$onion->id}");
-        $response->assertDontSee("edit-category-{$onion->id}");
-
-        // Private category - self → SHOULD have an edit button
-        $response->assertSee("edit-category-{$privateSelf->id}");
-        $response->assertDontSee("user-category-{$privateSelf->id}");
-        
-        // Private category - other → SHOULD NOT be present
-        $response->assertDontSee("edit-category-{$privateOther->id}");
-        $response->assertDontSee("user-category-{$privateOther->id}");
-*/        
+        // own private should not have a badge
+        $response->assertDontSee("badge-{$privateSelf->id}");
     }
 }

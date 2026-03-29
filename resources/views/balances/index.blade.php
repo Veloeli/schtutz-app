@@ -45,7 +45,7 @@
                 <tbody>
                     @foreach($balances as $row)
                         <tr>
-                            <td style="padding-left: {{ $row->depth * 20 }}px;">
+                            <td style="padding-left: {{ $row->depth * 15 }}px;">
                                 {{ $row->name }}
                                 @if($row->team_id)
                                     <span class="badge bg-secondary">

@@ -32,16 +32,15 @@ protected static function booted()
 
         $query->where(function ($q) use ($allowedUsers, $teams) {
 
-            // 1) Visible because its DOCUMENT is visible
+            // 1) document owner
             $q->whereHas('document', function ($qDoc) use ($allowedUsers) {
-                $qDoc->withoutGlobalScopes()   // ← critical fix
+                $qDoc->withoutGlobalScopes()
                      ->whereIn('documents.user_id', $allowedUsers);
             })
 
-            // 2) OR visible because its CATEGORY is visible
-              ->orWhereHas('category', function ($qCat) use ($allowedUsers, $teams) {
-                  $qCat->whereIn('categories.team_id', $teams)
-                       ->orWhereIn('categories.user_id', $allowedUsers);
+            // 2) or team category
+              ->orWhereHas('category', function ($qCat) use ($teams) {
+                  $qCat->whereIn('categories.team_id', $teams);
               });
         });
     });

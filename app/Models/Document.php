@@ -37,14 +37,13 @@ class Document extends Model
 
             $query->where(function ($q) use ($allowedUsers, $teams) {
 
-                // 1) User owns the document
+                // 1) document owner
                 $q->whereIn('documents.user_id', $allowedUsers)
 
-                // 2) OR the document has at least one visible item
-                  ->orWhereHas('items', function ($q2) use ($allowedUsers, $teams) {
-                      $q2->whereHas('category', function ($q3) use ($allowedUsers, $teams) {
-                          $q3->whereIn('categories.team_id', $teams)
-                             ->orWhereIn('categories.user_id', $allowedUsers);
+                // 2) or team category
+                  ->orWhereHas('items', function ($q2) use ($teams) {
+                      $q2->whereHas('category', function ($q3) use ($teams) {
+                          $q3->whereIn('categories.team_id', $teams);
                       });
                   });
             });

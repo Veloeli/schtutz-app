@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Document;
 use App\Models\User;
 use Illuminate\Support\Collection;
-use Carbon\Carbon;
+use DateTime;
 
 class DocumentService
 {
@@ -14,14 +14,11 @@ class DocumentService
         return Document::orderBy('created_at', 'desc')->get();
     }
 
-    public function visibleFor(User $user, Carbon|string $month, string $filter = 'all'): Collection
+    public function visibleFor(User $user, string $month, string $filter = 'all'): Collection
     {
-        if (is_string($month)) {
-            $month = Carbon::createFromFormat('Y-m', $month);
-        }
-
-        $start = $month->copy()->startOfMonth();
-        $end   = $month->copy()->endOfMonth();
+        // convert month from yyyy-mm to start and end date
+        $start = $month . '-01';
+        $end   = (new DateTime($start))->modify('last day of')->format('Y-m-d');
 
         // Parse filter
         [$filterType, $filterId] = $filter && str_contains($filter, '-')

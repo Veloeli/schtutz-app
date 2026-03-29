@@ -2,23 +2,18 @@
 
 namespace App\View\Components;
 
-use Illuminate\View\Component;
 use App\Models\User;
+use Illuminate\View\Component;
+use Illuminate\Support\Facades\Log;
 
 class UserTeamSelector extends Component
 {
-    public $teams;
-    public $members;
-    public $filter;
-
-    public function __construct()
+    public function render()
     {
         $user = auth()->user();
 
-        // 1. Fetch teams
-        $teams = $user->teamsWithFinancials()->get();
+        $teams = $user->teamsWithFinancials()->get()->unique('id')->values(); // same user might have several memberships in the same team
 
-        // 2. Fetch all members belonging to those teams
         $members = User::whereIn('id', function ($q) use ($teams) {
             $q->select('user_id')
               ->from('team_user')
@@ -26,13 +21,9 @@ class UserTeamSelector extends Component
               ->distinct();
         })->get();
 
-        // Assign to public properties so Blade can use them
-        $this->teams = $teams;
-        $this->members = $members;
-    }
-
-    public function render()
-    {
-        return view('components.user-team-selector');
+        return view('components.user-team-selector', [
+            'teams' => $teams,
+            'members' => $members,
+        ]);
     }
 }

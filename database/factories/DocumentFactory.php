@@ -20,4 +20,11 @@ class DocumentFactory extends Factory
             'user_id' => User::factory(),
         ];
     }
+
+    public function forUser(User $user)
+    {
+        return $this->state(fn () => [
+            'user_id' => $user->id,
+        ]);
+    }
 }

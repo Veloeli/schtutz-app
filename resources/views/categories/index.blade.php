@@ -45,7 +45,7 @@
                     <div class="text-muted small">
                         {{ $category->type_label }}
                         @if ($category->source_label)
-                            <span class="badge bg-secondary">
+                            <span class="badge bg-secondary" id="badge-{{ $category->id }}">
                                 {{ $category->source_label }}
                             </span>
                         @endif

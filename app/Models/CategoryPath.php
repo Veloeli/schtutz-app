@@ -38,8 +38,8 @@ class CategoryPath extends Model
 
             // Apply visibility rules
             $query->where(function ($q) use ($teams, $members) {
-                $q->whereIn('team_id', $teams->pluck('teams.id'))   // team-based visibility
-                  ->orWhereIn('user_id', $members->pluck('id')); // personal/private categories
+                $q->whereIn('category_paths_view.team_id', $teams->pluck('teams.id'))   // team-based visibility
+                  ->orWhereIn('category_paths_view.user_id', $members->pluck('id')); // personal/private categories
             });
         });
     }

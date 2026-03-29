@@ -12,6 +12,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
 class DocumentVisibilityTest extends TestCase
 {
     use RefreshDatabase;
@@ -24,7 +26,7 @@ class DocumentVisibilityTest extends TestCase
  
     protected User $u1ap, $u2a, $u3ab, $u4b, $u5;
     protected Team $ta, $tb;
-    protected Category $c1, $c2, $c3, $c4, $c5, $ca, $cb;
+    protected Category $c1, $c2, $c3, $c4, $c5, $ca1, $ca2, $cb;
     protected Document $d1, $d2, $d3, $d4, $d5, $da1, $da2, $db;
     protected Item $i1, $i2, $i3, $i4, $i5, $ia1, $ia2, $ib;
 

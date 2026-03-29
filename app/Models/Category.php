@@ -92,6 +92,6 @@ class Category extends Model
             return null;
         }
 
-        return $this->owner?->name;
+        return $this->user?->name;
     }
 }
