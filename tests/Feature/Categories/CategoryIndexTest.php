@@ -26,7 +26,6 @@ class CategoryIndexTest extends TestCase
         // Add both users to the same team
         TeamUser::factory()->create(['team_id' => $team->id, 'user_id' => $self->id,]);
         TeamUser::factory()->create(['team_id' => $team->id, 'user_id' => $other->id, 'reveal_private' => 1,]);
-//        $team->members()->attach([$self->id, $other->id]);
 
         // Team categories
         $salad = Category::factory()
@@ -67,5 +66,26 @@ class CategoryIndexTest extends TestCase
 
         // own private should not have a badge
         $response->assertDontSee("badge-{$privateSelf->id}");
+
+        // filter team
+        $response = $this->get('/categories?teamfilter=team-' . $team->id);
+        $response->assertSee("Salad");
+        $response->assertSee("Onion");
+        $response->assertDontSee("Wallet Self");
+        $response->assertDontSee("Wallet Other");
+
+        // filter member self
+        $response = $this->get('/categories?teamfilter=member-' . $self->id);
+        $response->assertSee("Salad");
+        $response->assertDontSee("Onion");
+        $response->assertSee("Wallet Self");
+        $response->assertDontSee("Wallet Other");
+
+        // filter member other (revealed)
+        $response = $this->get('/categories?teamfilter=member-' . $other->id);
+        $response->assertDontSee("Salad");
+        $response->assertSee("Onion");
+        $response->assertDontSee("Wallet Self");
+        $response->assertSee("Wallet Other");
     }
 }

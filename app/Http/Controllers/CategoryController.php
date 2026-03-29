@@ -19,17 +19,17 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         // Store filter if provided
-        if ($request->filled('filter')) {
-            session(['category_filter' => $request->filter]);
+        if ($request->filled('teamfilter')) {
+            session(['category_teamfilter' => $request->teamfilter]);
         }
 
         // Retrieve stored values (fallbacks if none stored)
-        $filter = session('category_filter', 'all');
+        $teamfilter = session('category_teamfilter', 'all');
 
         $user = auth()->user();
 
         // Visibility is enforced by the Category global scope
-        $categories = $this->categoryService->visibleFor($user, $filter)
+        $categories = $this->categoryService->visibleFor($user, $teamfilter)
             ->sortBy(fn($cat) => $cat->code . ' ' . $cat->name, SORT_STRING)
             ->values();
 
@@ -44,9 +44,7 @@ class CategoryController extends Controller
         
         return view('categories.index', [
             'categories' => $categories,
-            'filter' => $filter,
-            'teams' => $teams,
-            'members' => $members,
+            'teamfilter' => $teamfilter,
         ]);
     }
 
