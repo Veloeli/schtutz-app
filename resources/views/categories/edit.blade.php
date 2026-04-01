@@ -104,7 +104,7 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
 
-                <form id="deleteDocumentForm"
+                <form id="deleteCategoryForm"
                       method="POST"
                       action="{{ route('categories.destroy', $category) }}">
                     @csrf

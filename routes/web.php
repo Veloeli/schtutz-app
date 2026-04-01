@@ -11,6 +11,7 @@ use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\StockSplitController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\BalanceController;
+use App\Http\Controllers\ListingController;
 
 // Welcome page (public)
 Route::get('/', function () {
@@ -53,12 +54,15 @@ Route::middleware('auth')->group(function () {
     // Securities
     Route::resource('securities', SecurityController::class);
     Route::resource('stock-splits', StockSplitController::class);
+    Route::resource('quotes', QuoteController::class);
     Route::get('/quotes/import', [QuoteController::class, 'showImportForm'])->name('quotes.import');
     Route::post('/quotes/import', [QuoteController::class, 'import'])->name('quotes.import.process');
-    Route::resource('quotes', QuoteController::class);
 
     Route::get('/balances', [BalanceController::class, 'index'])->name('balances.index');
 //    Route::post('/balances/set-root', [BalanceController::class, 'setRoot'])->name('balances.setRoot');
+
+    // Listings
+    Route::resource('listings', ListingController::class);
 
     // PROFILES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

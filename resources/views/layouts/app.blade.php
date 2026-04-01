@@ -72,14 +72,21 @@
                     <li class="nav-item">
                         <a href="{{ route('documents.index') }}" 
                            class="nav-link {{ request()->is('documents*') ? 'active text-white fw-bold' : 'text-white' }}">
-                            <i class="bi bi-file-earmark-text"></i> Documents
+                            <i class="bi bi-cash-coin"></i> Documents
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('quotes.index') }}" 
                            class="nav-link {{ request()->is('quotes*') ? 'active text-white fw-bold' : 'text-white' }}">
-                            <i class="bi bi-cash-coin"></i> Quotes
+                            <i class="bi bi-graph-up"></i> Quotes
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ route('listings.index') }}" 
+                           class="nav-link {{ request()->is('listings*') ? 'active text-white fw-bold' : 'text-white' }}">
+                            <i class="bi bi-card-checklist"></i> Listings
                         </a>
                     </li>
 
@@ -93,7 +100,7 @@
                     <li class="nav-item">
                         <a href="{{ route('securities.index') }}" 
                            class="nav-link {{ request()->is('securities*') ? 'active text-white fw-bold' : 'text-white' }}">
-                            <i class="bi bi-graph-up"></i> Securities
+                            <i class="bi bi-file-earmark-text"></i> Securities
                         </a>
                     </li>
 
