@@ -102,10 +102,10 @@
                             @if ($doc->items->isEmpty())
                                 <p class="text-muted fst-italic">No items found for this document.</p>
                             @else
-                                <table class="table table-sm align-middle">
-                                    <thead>     
-                                        <tr>
-                                            <th style="width: 40px;"></th>
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr class="bg-gray-100 text-left">
+                                            <th style="width: 30px;"></th>
                                             <th>Item</th>
                                             <th class="text-end">Amount</th>
                                             <th class="text-center">Sign</th>
@@ -128,11 +128,20 @@
                                                 {{ $item->name }}
                                                 <div class="text-muted small">
                                                     {{ $item->category->type_label }} - {{ $item->category->name }}
+                                                    @if($item->category->team_id)
+                                                        <span class="badge bg-secondary">
+                                                            {{ $item->category->team->name }}
+                                                        </span>
+                                                    @elseif($doc->user_id !== auth()->id())
+                                                        <span class="badge bg-secondary">
+                                                            {{ $doc->user->name }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </td>
                                             <td class="text-end">{{ number_format($item->amount, 2) }}</td>
 
-                                            <td class="text-center" style="width: 80px;">
+                                            <td class="text-center" style="width: 60px;">
                                                 <input 
                                                     type="checkbox"
                                                     name="change_sign[{{ $item->id }}]"
