@@ -8,7 +8,7 @@
         <h2 class="mb-4">Listings</h2>
 
         <a href="{{ route('listings.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> New
+            New Listing
         </a>
     </div>
 
@@ -22,7 +22,6 @@
                 <div class="col-12 col-md-4">
                     <label class="form-label">Listing</label>
                     <select name="listing_id" class="form-select" onchange="this.form.submit()">
-                        <option value="">All</option>
                         @foreach($listings as $list)
                             <option value="{{ $list->id }}" @selected($list->id == $selectedListingId)>
                                 {{ $list->name }}

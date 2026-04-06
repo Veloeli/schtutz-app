@@ -67,7 +67,7 @@
 
             <!-- Left side: Update + Cancel -->
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
 
                 <a href="{{ route('teams.index') }}"
                    class="btn btn-secondary">

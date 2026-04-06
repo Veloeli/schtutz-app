@@ -69,7 +69,7 @@
             <div class="d-flex gap-2">
                 @can('update', $document)
                 <button type="submit" class="btn btn-primary">
-                    Update
+                    Save Changes
                 </button>
                 @endcan
 

@@ -72,7 +72,7 @@
             <!-- Left side: Update + Cancel -->
             <div class="d-flex gap-2">
                 @can('update', $item)
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
                 @endcan
                 
                 <a href="{{ route('documents.index') }}"

@@ -66,7 +66,7 @@
         <div class="d-flex justify-content-between mt-4">
             <div class="d-flex gap-2">
                 <!-- Save -->
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
 
                 <a href="{{ route('categories.index') }}"
                    class="btn btn-secondary">
@@ -88,7 +88,7 @@
 
 </div>
 
-<!-- DELETE CATEGORY MODAL -->
+<!-- DELETE MODAL -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content bg-dark text-white">

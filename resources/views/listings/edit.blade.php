@@ -1,24 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
+<div class="container-py4">
+    <h2>Edit Listing: {{ $listing->name }}</h2>
 
-    {{-- ========================= --}}
-    {{-- 1. HEADER + ACTION BUTTONS --}}
-    {{-- ========================= --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Edit Listing: {{ $listing->name }}</h2>
-
-        <div>
-            <a href="{{ route('listings.index') }}" class="btn btn-secondary">Back</a>
-            <button form="listing-form" class="btn btn-primary">Save Changes</button>
-        </div>
-    </div>
-
-
-    {{-- ========================= --}}
-    {{-- 2. LISTING DETAILS FORM   --}}
-    {{-- ========================= --}}
+    {{--   LISTING DETAILS FORM   --}}
     <form id="listing-form" method="POST" action="{{ route('listings.update', $listing) }}">
         @csrf
         @method('PUT')
@@ -65,34 +51,146 @@
             </div>
         </div>
 
-        {{-- ===================================== --}}
-        {{-- 4. ITEM SELECTION (GROUPED BY DOC)    --}}
-        {{-- ===================================== --}}
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="d-flex gap-2">
+                <!-- Save -->
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+
+                <a href="{{ route('listings.index') }}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+
+            <!-- Right side: Delete (opens modal) -->
+            <button type="button"
+                    class="btn btn-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteModal">
+                Delete
+            </button>
+        </div>
+        <br>
+
+        {{--   ITEM SELECTION (GROUPED BY DOC)    --}}
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span class="fw-bold">Select Items</span>
 
-                <button class="btn btn-sm btn-outline-secondary" 
-                        type="button" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#items-section">
-                    Toggle
-                </button>
             </div>
 
-            <div id="items-section" class="collapse show">
+            <div id="items-section">
                 <div class="card-body">
                     {{-- Reusable component --}}
-                    <x-listing.item-selector 
-                        :listing="$listing"
-                        :documents="$documents"
-                    />
+                    <p class="text-muted mb-3">
+                        Select the individual items you want to include in this listing.
+                    </p>
+
+                    @foreach ($documents as $doc)
+                        <div class="mb-4 border rounded p-3">
+
+                            <h6 class="fw-bold mb-2">
+                                {{ $doc->title }}
+                                <span class="text-muted">({{ $doc->posting_date->format('d.m.Y') }})</span>
+                                    @if($doc->user_id !== auth()->id())
+                                        <span class="badge bg-secondary">
+                                            {{ $doc->user->name }}
+                                        </span>
+                                    @endif
+                            </h6>
+
+                            @if ($doc->items->isEmpty())
+                                <p class="text-muted fst-italic">No items found for this document.</p>
+                            @else
+                                <table class="table table-sm align-middle">
+                                    <thead>     
+                                        <tr>
+                                            <th style="width: 40px;"></th>
+                                            <th>Item</th>
+                                            <th class="text-end">Amount</th>
+                                            <th class="text-center">Sign</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        @foreach ($doc->items as $item)
+                                        <tr>
+                                            <td>
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="items[]" 
+                                                    value="{{ $item->id }}"
+                                                    @checked($listing->items->contains($item->id))
+                                                >
+                                            </td>
+
+                                            <td>
+                                                {{ $item->name }}
+                                                <div class="text-muted small">
+                                                    {{ $item->category->type_label }} - {{ $item->category->name }}
+                                                </div>
+                                            </td>
+                                            <td class="text-end">{{ number_format($item->amount, 2) }}</td>
+
+                                            <td class="text-center" style="width: 80px;">
+                                                <input 
+                                                    type="checkbox"
+                                                    name="change_sign[{{ $item->id }}]"
+                                                    value="1"
+                                                    @checked(
+                                                        optional($listing->items->firstWhere('id', $item->id))->pivot->change_sign ?? false
+                                                    )
+                                                >
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            @endif
+
+                        </div>
+                    @endforeach
+                    {{ $documents->links() }}
+
                 </div>
             </div>
         </div>
+
+        {{--   ORIGINAL ITEM SELECTION (SO THE CONTROLLER CAN COMPARE FOR CHANGES AND SAVE ACCORDINGLY LATER)  --}}
+        @foreach ($originalItems as $id)
+            <input type="hidden" name="original_items[]" value="{{ $id }}">
+        @endforeach
+
     </form>
 
 </div>
 
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Listing</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ $listing->name }}</strong>?</p>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+                <form id="deleteCategoryForm"
+                      method="POST"
+                      action="{{ route('listings.destroy', $listing) }}">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-danger">Delete Listing</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 

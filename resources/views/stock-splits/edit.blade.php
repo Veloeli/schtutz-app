@@ -14,7 +14,7 @@
         <div class="d-flex justify-content-between mt-4">
             <div class="d-flex gap-2">
                 <!-- Save -->
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
 
                 <a href="{{ route('securities.edit', $split->old_id) }}" 
                    class="btn btn-secondary">

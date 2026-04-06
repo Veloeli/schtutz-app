@@ -8,7 +8,7 @@
         <h2 class="mb-4">Stock Quotes</h2>
 
         <a href="{{ route('quotes.import') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Import
+            Import Quotes
         </a>
     </div>
 

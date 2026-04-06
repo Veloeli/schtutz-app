@@ -28,13 +28,13 @@ class ListingController extends Controller
 
         if ($selectedListingId) {
 
-            // Load the selected listing (gives you date_from, date_to)
+            // Load the selected listing (gives date_from, date_to)
             $listing = Listing::find($selectedListingId);
             // Summarized documents query
             $documents = Document::query()
                 ->join('items', 'items.document_id', '=', 'documents.id')
                 ->join('listing_item', 'listing_item.item_id', '=', 'items.id')
-                ->join('users', 'users.id', '=', 'documents.user_id') // ← required
+                ->join('users', 'users.id', '=', 'documents.user_id')
                 ->where('listing_item.listing_id', $selectedListingId)
                 ->select([
                     'documents.id',
@@ -94,10 +94,10 @@ class ListingController extends Controller
 
     public function edit(Listing $listing)
     {
-        $user = auth()->user();
+        $user  = auth()->user();
         $teams = $user->teamsWithFinancials()->get();
 
-        // Load listing's attached items + their categories + their documents
+        // Load visible items + categories + documents
         $listing->load([
             'items.category',
             'documents',
@@ -107,57 +107,90 @@ class ListingController extends Controller
         $documents = Document::query()
             ->whereBetween('posting_date', [$listing->date_from, $listing->date_to ?? '2999-12-31'])
             ->with(['items.category'])
-            ->orderBy('posting_date')
-            ->get();
-
+            ->orderBy('documents.posting_date', 'desc')
+            ->orderBy('documents.title')
+            ->paginate(5);
         // Sort items inside each document
-        $documents->each(function ($doc) {
+        $documents->getCollection()->transform(function ($doc) {
             $doc->items = $doc->items->sortBy([
                 fn ($item) => $item->category->type_label,
                 fn ($item) => $item->category->name,
                 fn ($item) => $item->name,
             ])->values();
+
+            return $doc;
         });
 
+        // Pivot items (attached to listing)
+        $pivotItems = DB::table('listing_item')
+            ->where('listing_id', $listing->id)
+            ->pluck('item_id')
+            ->toArray();
+        $visibleItems = $documents
+            ->pluck('items')      // collection of item collections
+            ->flatten()           // flatten into one collection
+            ->filter(fn ($item) => in_array($item->id, $pivotItems))
+            ->pluck('id')
+            ->unique()
+            ->values()
+            ->toArray();
+//dd($pivotItems, $visibleItems);
+
         return view('listings.edit', [
-            'listing'   => $listing,
-            'teams'     => $teams,
-            'documents' => $documents,
+            'listing'      => $listing,
+            'teams'        => $teams,
+            'documents'    => $documents,
+            'originalItems'=> $visibleItems,
         ]);
     }
 
     public function update(Request $request, Listing $listing)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name'      => 'required|string|max:255',
             'date_from' => 'required|date',
-            'date_to' => 'nullable|date',
-            'team_id' => 'nullable|exists:teams,id',
+            'date_to'   => 'nullable|date',
+            'team_id'   => 'nullable|exists:teams,id',
 
-            'items' => 'array',
-            'items.*' => 'integer|exists:items,id',
+            'items'     => 'array',
+            'items.*'   => 'integer|exists:items,id',
         ]);
 
         // Update listing fields
         $listing->update($validated);
 
-        // Selected items (or empty array)
-        $selectedItems = $request->input('items', []);
+        // Round-trip data (visible items only)
+        $originalItems = $request->input('original_items', []); // visible at edit time
+        $selectedItems = $request->input('items', []);          // visible selected now
+        $changeSign    = $request->input('change_sign', []);    // new sign values
 
-        // Change-sign array: [item_id => 1]
-        $changeSign = $request->input('change_sign', []);
+        //
+        // 1. ATTACH OR UPDATE SELECTED ITEMS (visible only)
+        //
+        foreach ($selectedItems as $itemId) {
+            $newValue = isset($changeSign[$itemId]) ? 1 : 0;
 
-        // Build sync array with pivot data
-        $syncData = collect($selectedItems)->mapWithKeys(function ($itemId) use ($changeSign) {
-            return [
-                $itemId => [
-                    'change_sign' => isset($changeSign[$itemId]) ? 1 : 0,
-                ]
-            ];
-        })->toArray();
+            if (! in_array($itemId, $originalItems)) {
+                // Newly attached (visible)
+                $listing->items()->attach($itemId, [
+                    'change_sign' => $newValue,
+                ]);
+            } else {
+                // Previously attached (visible) → update sign
+                $listing->items()->updateExistingPivot($itemId, [
+                    'change_sign' => $newValue,
+                ]);
+            }
+        }
 
-        // Sync items + pivot fields
-        $listing->items()->sync($syncData);
+        //
+        // 2. DETACH ONLY VISIBLE ITEMS THE USER EXPLICITLY REMOVED
+        //
+        $itemsToDetach = array_diff($originalItems, $selectedItems);
+
+        if (! empty($itemsToDetach)) {
+            $listing->items()->detach($itemsToDetach);
+        }
 
         return redirect()
             ->route('listings.index', ['listing_id' => $listing->id])

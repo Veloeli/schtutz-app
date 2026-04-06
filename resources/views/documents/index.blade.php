@@ -11,7 +11,7 @@
     <h2 class="mb-4">Documents</h2>
 
     <a href="{{ route('documents.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> New Document
+        New Document
     </a>
 </div>
 
@@ -156,7 +156,7 @@
                                     @can('update', $doc)
                                     <a href="{{ route('documents.items.create', $doc) }}"
                                        class="btn btn-primary btn-sm">
-                                        Add Item
+                                        New Item
                                     </a>
                                     @endcan
 

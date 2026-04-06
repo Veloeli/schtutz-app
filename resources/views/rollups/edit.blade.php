@@ -72,17 +72,17 @@
             <!-- Left side: Update + Cancel -->
             <div class="d-flex gap-2">
                 @can('update', $rollup)
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
                 @endcan
-
-                <a href="{{ route('rollups.create', ['parent_id' => $rollup->id]) }}"
-                   class="btn btn-primary">
-                    Add Child
-                </a>
 
                 <a href="{{ route('rollups.index') }}"
                    class="btn btn-secondary">
                     Cancel
+                </a>
+
+                <a href="{{ route('rollups.create', ['parent_id' => $rollup->id]) }}"
+                   class="btn btn-primary">
+                    Add Child
                 </a>
             </div>
 

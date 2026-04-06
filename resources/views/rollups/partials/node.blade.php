@@ -16,7 +16,11 @@
         <div class="ms-auto">
             <a href="{{ route('rollups.edit', ['rollup' => $node->id]) }}"
                class="btn btn-sm btn-primary">
-               Edit
+                @if ($node->parent_id)
+                    Edit
+                @else
+                    Edit Hierarchy
+                @endif
             </a>
         </div>
     </li>

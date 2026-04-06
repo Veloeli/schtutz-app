@@ -7,7 +7,7 @@
     <h2 class="mb-4">Securities</h2>
 
     <a href="{{ route('securities.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> New
+        New Security
     </a>
 </div>
 
