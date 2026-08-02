@@ -5,8 +5,11 @@
         <h1 class="text-2xl font-bold mb-4">Welcome to Schtutz</h1>
 
         @auth
-            <p class="text-gray-600">
+            <p class="text-gray-600 d-none d-md-block">
                 You’re logged in and ready to start. Use the sidebar to navigate.
+            </p>
+            <p class="text-gray-600 d-md-none">
+                You’re logged in and ready to start. Use the hamburger menu to navigate.
             </p>
         @endauth
 

@@ -11,7 +11,7 @@ use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\StockSplitController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\BalanceController;
-use App\Http\Controllers\ListingController;
+use App\Http\Controllers\CollectionController;
 
 // Welcome page (public)
 Route::get('/', function () {
@@ -61,8 +61,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/balances', [BalanceController::class, 'index'])->name('balances.index');
 //    Route::post('/balances/set-root', [BalanceController::class, 'setRoot'])->name('balances.setRoot');
 
-    // Listings
-    Route::resource('listings', ListingController::class);
+    // Collections
+    Route::resource('collections', CollectionController::class);
 
     // PROFILES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

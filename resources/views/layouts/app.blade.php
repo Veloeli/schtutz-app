@@ -84,9 +84,9 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('listings.index') }}" 
-                           class="nav-link {{ request()->is('listings*') ? 'active text-white fw-bold' : 'text-white' }}">
-                            <i class="bi bi-card-checklist"></i> Listings
+                        <a href="{{ route('collections.index') }}" 
+                           class="nav-link {{ request()->is('collections*') ? 'active text-white fw-bold' : 'text-white' }}">
+                            <i class="bi bi-card-checklist"></i> Collections
                         </a>
                     </li>
 

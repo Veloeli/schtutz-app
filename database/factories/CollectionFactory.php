@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\Listing;
+use App\Models\Collection;
 use App\Models\User;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ListingFactory extends Factory
+class CollectionFactory extends Factory
 {
     protected $model = List::class;
 

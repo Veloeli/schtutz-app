@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Listing extends Model
+class Collection extends Model
 {
     use HasFactory;
 
@@ -37,8 +37,8 @@ class Listing extends Model
 
             // Apply visibility rules
             $query->where(function ($q) use ($user, $teams) {
-                $q->whereIn('listings.team_id', $teams)   // team-based visibility
-                  ->orWhere('listings.user_id', $user->id); // personal/private securities
+                $q->whereIn('collections.team_id', $teams)   // team-based visibility
+                  ->orWhere('collections.user_id', $user->id); // personal/private securities
             });
         });
     }
@@ -61,7 +61,7 @@ class Listing extends Model
 
     public function items()
     {
-        return $this->belongsToMany(Item::class, 'listing_item')
+        return $this->belongsToMany(Item::class, 'collection_item')
             ->withPivot('change_sign')
             ->withTimestamps();
     }
@@ -73,7 +73,7 @@ class Listing extends Model
             Item::class,
             'id',            // Item.id
             'id',            // Document.id
-            null,            // Listing.id (local key)
+            null,            // collection.id (local key)
             'document_id'    // Item.document_id (foreign key)
         )->distinct();
     }

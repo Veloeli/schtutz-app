@@ -78,4 +78,10 @@ protected static function booted()
         return $this->belongsTo(Category::class);
     }
 
+    public function collections()
+    {
+        return $this->belongsToMany(Collection::class, 'collection_item')
+            ->withPivot('change_sign')
+            ->withTimestamps();
+    }
 }
