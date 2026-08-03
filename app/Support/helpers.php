@@ -21,6 +21,17 @@ if (! function_exists('formatAmount')) {
     }
 }
 
+if (! function_exists('formatAmountNumeric')) {
+    function formatAmountNumeric($value) {
+        $str = formatAmount($value); // e.g. "1,730.00"
+
+        // Remove all characters except digits and dot
+        $str = preg_replace('/[^0-9.]/', '', $str);
+
+        return $str; // "1730.00"
+    }
+}
+    
 if (! function_exists('formatQuantity')) {
     // format with 0 digits by default, but display more if necessary
     function formatQuantity($value) {
@@ -39,6 +50,17 @@ if (! function_exists('formatQuantity')) {
 
         // Otherwise → force exactly 0 decimals
         return number_format($float, 0);
+    }
+}
+
+if (! function_exists('formatQuantityNumeric')) {
+    function formatQuantityNumeric($value) {
+        $str = formatQuantity($value); // e.g. "1,234.5"
+
+        // Remove all characters except digits and dot
+        $str = preg_replace('/[^0-9.]/', '', $str);
+
+        return $str; // "1234.5"
     }
 }
 
