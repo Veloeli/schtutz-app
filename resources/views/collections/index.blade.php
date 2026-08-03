@@ -52,7 +52,8 @@
                     {{-- Balance --}}
                     <div class="col-12 col-sm-6 col-md-2">
                         <label class="form-label">Balance</label>
-                        <input type="text"
+                        <input id="balance"
+                               type="text"
                                class="form-control"
                                value="{{ number_format($balance, 2) }}"
                                readonly>

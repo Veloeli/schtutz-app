@@ -32,7 +32,7 @@ class Collection extends Model
                 return;
             }
 
-            // Lists the user can see
+            // Collections the user can see
             $teams = $user->teamsWithFinancials()->pluck('teams.id');
 
             // Apply visibility rules

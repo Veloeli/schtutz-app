@@ -134,7 +134,6 @@ class CollectionController extends Controller
             ->unique()
             ->values()
             ->toArray();
-//dd($pivotItems, $visibleItems);
 
         return view('collections.edit', [
             'collection'   => $collection,

@@ -71,7 +71,7 @@ class SecurityVisibilityTest extends TestCase
     }
 
     #[Test]
-    public function alice_sees_securities_from_her_own_team()
+    public function alice_sees_securities_of_her_own_team()
     {
         $this->actingAs($this->alice);
 

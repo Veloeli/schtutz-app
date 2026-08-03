@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CollectionFactory extends Factory
 {
-    protected $model = List::class;
+    protected $model = Collection::class;
 
     public function definition()
     {
@@ -18,10 +18,24 @@ class CollectionFactory extends Factory
 
         return [
             'user_id'   => User::factory(),
-            'team_id'   => Team::factory(),
+            'team_id'   => null,
             'name'      => $this->faker->sentence(3),
             'date_from' => $dateFrom->format('Y-m-d'),
             'date_to'   => $dateTo->format('Y-m-d'),
         ];
+    }
+
+    public function forUser(User $user)
+    {
+        return $this->state(fn () => [
+            'user_id' => $user->id,
+        ]);
+    }
+
+    public function forTeam(Team $team)
+    {
+        return $this->state(fn () => [
+            'team_id' => $team->id,
+        ]);
     }
 }

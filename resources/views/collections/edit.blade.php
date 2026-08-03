@@ -135,6 +135,7 @@
                                                 @endif
                                             </div>
                                         </td>
+                                        
                                         <td class="text-end">{{ number_format($item->amount, 2) }}</td>
 
                                         <td class="text-center" style="width: 60px;">
