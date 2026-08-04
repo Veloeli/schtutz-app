@@ -11,13 +11,14 @@ if (! function_exists('formatAmount')) {
         $float = (float) $value;
 
         // If rounding to 2 decimals changes the value → show full precision
-        if (round($float, 2) != $float) {
-            // Show raw value, but trim trailing zeros
-            return rtrim(rtrim((string)$value, '0'), '.');
+        if (round($float, 2) == $float) {
+            $str = number_format($float,2);
+        } else {
+            $str = number_format($float,6);
+            $str = rtrim(rtrim($str, '0'), '.');
         }
 
-        // Otherwise → force exactly 2 decimals
-        return number_format($float, 2);
+        return $str;
     }
 }
 
@@ -43,13 +44,14 @@ if (! function_exists('formatQuantity')) {
         $float = (float) $value;
 
         // If rounding to 0 decimals changes the value → show full precision
-        if (round($float, 0) != $float) {
-            // Show raw value, but trim trailing zeros
-            return rtrim(rtrim((string)$value, '0'), '.');
+        if (round($float, 0) == $float) {
+            $str = number_format($float,0);
+        } else {
+            $str = number_format($float,3);
+            $str = rtrim(rtrim($str, '0'), '.');
         }
 
-        // Otherwise → force exactly 0 decimals
-        return number_format($float, 0);
+        return $str;
     }
 }
 

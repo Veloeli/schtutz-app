@@ -104,7 +104,7 @@
                                                         <div class="col-6">
                                                             <div class="fw-bold">
                                                                 @if($item->quantity !== null)
-                                                                    {{ $item->quantity * 1 }} ×
+                                                                    {{ formatQuantity($item->quantity) }} ×
                                                                 @endif
                                                                 {{ $item->name }}
                                                             </div>
