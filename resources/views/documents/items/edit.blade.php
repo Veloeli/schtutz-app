@@ -18,8 +18,9 @@
         <div class="mb-3">
             <label class="form-label">Amount</label>
             <input type="number" step="0.000001" name="amount"
-                   class="form-control"         
-            value="{{ old('amount', formatAmountNumeric($item->amount ?? '')) }}"
+                   autocomplete="off"
+                   class="form-control"
+                   value="{{ old('amount', formatAmountNumeric($item->amount ?? '')) }}"
         </div>
 
         @php
