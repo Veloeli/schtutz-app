@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 
 class Security extends Model
 {
@@ -153,5 +154,54 @@ class Security extends Model
         return '<a href="' . route('securities.edit', $this->id) . '" class="text-blue-600">'
             . e($this->name)
             . '</a>';
+    }
+
+    public function quoteAt(Carbon $date)
+    {
+        $visited = [];
+        $cache = [];
+
+        return $this->resolveQuoteAt($date, $visited, $cache);
+    }
+
+    private function resolveQuoteAt(Carbon $date, array &$visited, array &$cache)
+    {
+        // Prevent infinite loops
+        if (in_array($this->id, $visited)) {
+            throw new \Exception("Currency recursion detected for security {$this->id}");
+        }
+
+        // Cached?
+        if (isset($cache[$this->id])) {
+            return $cache[$this->id];
+        }
+
+        $visited[] = $this->id;
+
+        // Latest quote <= date
+        $latestQuote = $this->quotes()
+            ->where('quote_date', '<=', $date)
+            ->orderBy('quote_date', 'desc')
+            ->value('price');
+
+        if ($latestQuote === null) {
+            throw new \Exception("No quote available for security {$this->id} on or before {$date->toDateString()}");
+        }
+
+        // No currency → done
+        if ($this->currency_id === null) {
+            return $cache[$this->id] = $latestQuote;
+        }
+
+        // Resolve currency recursively
+        $currency = $this->currency; // relationship
+
+        if (!$currency) {
+            throw new \Exception("Currency security {$this->currency_id} not found");
+        }
+
+        $currencyQuote = $currency->resolveQuoteAt($date, $visited, $cache);
+
+        return $cache[$this->id] = $latestQuote * $currencyQuote;
     }
 }
