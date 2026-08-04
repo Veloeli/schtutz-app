@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Services\DocumentService;
+use App\Services\CategoryService;
 use App\Models\User;
 use App\Models\Team;
 use Illuminate\Http\Request;
@@ -13,7 +14,8 @@ use Carbon\Carbon;
 class DocumentController extends Controller
 {
     public function __construct(
-        protected DocumentService $documents
+        protected DocumentService $documents,
+        protected CategoryService $categories,
     ) {}
 
     public function index(Request $request)
@@ -55,15 +57,17 @@ class DocumentController extends Controller
         }
 
         return view('documents.create', [
-            'posting_date' => $defaultPostingDate,
+            'posting_date'   => $defaultPostingDate,
+            'possibleOwners' => auth()->user()->possibleDocumentOwners(),
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'         => 'required|string|max:255',
-            'posting_date'  => 'required|date',
+            'title'            => 'required|string|max:255',
+            'posting_date'     => 'required|date',
+            'user_id'          => 'required|integer',
         ]);
 
         // Freeze-after check
@@ -76,9 +80,6 @@ class DocumentController extends Controller
         // Hidden defaults
         $validated['repeat_pattern']  = 0;
         $validated['repeat_constant'] = 0;
-
-        // Owner is always the current user
-        $validated['user_id'] = $request->user()->id;
 
         // Create the document
         $document = $this->documents->create($validated);
@@ -104,18 +105,19 @@ class DocumentController extends Controller
             ->with('success', 'Document created successfully.');
     }
 
-    public function edit(Document $document, Request $request)
+    public function edit(Document $document)
     {
-        $month = $request->input('month', now()->format('Y-m'));
-
         return view('documents.edit', [
-            'document' => $document,
-            'currentMonth' => $month,
+            'document'       => $document,
+            'possibleOwners' => auth()->user()->possibleDocumentOwners(),
         ]);
     }
 
     public function update(Request $request, Document $document)
     {
+        $oldOwnerId = $document->user_id;
+        $newOwnerId = $request->input('user_id');
+        
         // make sure we have a valid repeat_constant even if Blade delivers null
         if ($request->input('repeat_pattern') === "0") {
             $request->merge([
@@ -126,6 +128,7 @@ class DocumentController extends Controller
         $validated = $request->validate([
             'title'            => 'required|string|max:255',
             'posting_date'     => 'required|date',
+            'user_id'          => 'required|integer',
             'repeat_pattern'   => 'required|numeric|min:0|max:24',
             'repeat_constant'  => 'required|boolean',
         ]);
@@ -146,6 +149,22 @@ class DocumentController extends Controller
         // Set the month in session based on the document date
         $month = \Carbon\Carbon::parse($document->posting_date)->format('Y-m');
         session(['document_month' => $month]);
+
+        // If owner changed, clean up invalid items
+        if ($oldOwnerId != $newOwnerId) {
+
+            $newOwner = User::find($newOwnerId);
+
+            // Use the SAME visibility logic as DocumentItemController
+            $validCategories = $this->categories
+                ->visibleForDocument($newOwner, $document)
+                ->pluck('id');
+
+            // Delete items whose categories are not visible to the new owner
+            $document->items()
+                ->whereNotIn('category_id', $validCategories)
+                ->delete();
+        }
 
         return redirect()
             ->route('documents.index')

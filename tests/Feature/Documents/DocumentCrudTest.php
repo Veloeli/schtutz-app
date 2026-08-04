@@ -29,6 +29,7 @@ class DocumentCrudTest extends TestCase
         $payload = [
             'title' => 'March Posting',
             'posting_date' => now()->addDays(-3)->toDateString(),
+            'user_id' => $this->user->id,
         ];
 
         $response = $this->actingAs($this->user)
@@ -49,6 +50,7 @@ class DocumentCrudTest extends TestCase
         $document = Document::factory()->for($this->user)->create([
             'title' => 'Old title',
             'posting_date' => now()->toDateString(),
+            'user_id' => $this->user->id,
             'repeat_pattern' => null,
             'repeat_constant' => false,
         ]);
@@ -56,6 +58,7 @@ class DocumentCrudTest extends TestCase
         $payload = [
             'title' => 'Updated title',
             'posting_date' => now()->addDays(-5)->toDateString(),
+            'user_id' => $this->user->id,
             'repeat_pattern' => 2,
             'repeat_constant' => true,
         ];

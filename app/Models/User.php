@@ -98,6 +98,20 @@ class User extends Authenticatable
                   ->orWhere('member_to', '>=', $today);
             });
     }
+    
+    public function possibleDocumentOwners()
+    {
+        $teams = $this->teamsWithFinancials()
+            ->with('members')
+            ->get();
+
+        return $teams
+            ->pluck('members')   // collection of collections
+            ->flatten()          // merge into one collection
+            ->push($this)        // include the current user
+            ->unique('id')       // remove duplicates
+            ->values();          // reset keys
+    }
 
     public function preferredRoot()
     {

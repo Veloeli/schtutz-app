@@ -33,10 +33,14 @@
 
             <div class="col-md-6 mb-3">
                 <label class="form-label">Document Owner</label>
-                <input type="text"
-                       class="form-control"
-                       value="{{ $document->user->name }}"
-                       disabled>
+                <select name="user_id" class="form-select">
+                    @foreach($possibleOwners as $owner)
+                        <option value="{{ $owner->id }}" 
+                            @selected($owner->id === $document->user_id)>
+                            {{ $owner->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
         </div>
 

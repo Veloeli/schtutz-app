@@ -23,6 +23,7 @@ class DocumentPolicyTest extends TestCase
         $payload = [
             'title' => 'Old Posting',
             'posting_date' => now()->subMonths(6)->toDateString(),
+            'user_id' => $user->id,
         ];
 
         $response = $this->actingAs($user)
@@ -48,6 +49,7 @@ class DocumentPolicyTest extends TestCase
         $payload = [
             'title' => 'Recent Posting',
             'posting_date' => now()->subMonths(1)->toDateString(),
+            'user_id' => $user->id,
         ];
 
         $response = $this->actingAs($user)
@@ -76,11 +78,13 @@ class DocumentPolicyTest extends TestCase
             ->create([
                 'title' => 'Old Doc',
                 'posting_date' => now()->subMonths(6)->toDateString(),
+                'user_id' => $user->id,
             ]);
 
         $payload = [
             'title' => 'Updated Title',
             'posting_date' => now()->subMonths(6)->toDateString(),
+            'user_id' => $user->id,
             'repeat_pattern' => 0,
             'repeat_constant' => false,
         ];
@@ -96,6 +100,7 @@ class DocumentPolicyTest extends TestCase
             'id' => $document->id,
             'title' => 'Old Doc', // unchanged
             'posting_date' => now()->subMonths(6)->toDateString(),
+            'user_id' => $user->id,
         ]);
     }
 
@@ -111,11 +116,13 @@ class DocumentPolicyTest extends TestCase
             ->create([
                 'title' => 'Old Doc',
                 'posting_date' => now()->subMonths(1)->toDateString(),
+                'user_id' => $user->id,
             ]);
 
         $payload = [
             'title' => 'Updated Title',
             'posting_date' => now()->subMonths(1)->toDateString(),
+            'user_id' => $user->id,
             'repeat_pattern' => 0,
             'repeat_constant' => false,
         ];
@@ -128,6 +135,7 @@ class DocumentPolicyTest extends TestCase
         $this->assertDatabaseHas('documents', [
             'id' => $document->id,
             'title' => 'Updated Title',
+            'user_id' => $user->id,
         ]);
     }
 }
