@@ -102,7 +102,9 @@ class User extends Authenticatable
     public function possibleDocumentOwners()
     {
         $teams = $this->teamsWithFinancials()
-            ->with('members')
+            ->with(['members' => function ($q) {
+                $q->wherePivot('reveal_private', 1);
+            }])
             ->get();
 
         return $teams
