@@ -204,4 +204,33 @@ class Security extends Model
 
         return $cache[$this->id] = $latestQuote * $currencyQuote;
     }
+    
+    public function scopeAvailableCurrencies($query, User $user)
+    {
+        $teamIds = $user->teamsWithSecurities->pluck('id');
+
+        return $query
+            ->where('asset_class', 'FX')
+            ->where('is_in_use', 1)
+            ->where(function ($q) use ($user, $teamIds) {
+                $q->where('user_id', $user->id)
+                  ->orWhereIn('team_id', $teamIds);
+            })
+            ->orderBy('name');
+    }
+        
+    public static function currenciesForDocument(Document $document, User $user)
+    {
+        $available = self::availableCurrencies($user)->get();
+
+        if ($document->currency_id) {
+            $current = self::find($document->currency_id);
+
+            if ($current && !$available->contains('id', $current->id)) {
+                $available->push($current);
+            }
+        }
+
+        return $available;
+    }
 }

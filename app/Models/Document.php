@@ -16,7 +16,9 @@ class Document extends Model
         'posting_date', 
         'repeat_pattern', 
         'repeat_constant', 
-        'user_id'
+        'user_id',
+        'currency_id',
+        'currency_rate'
     ];
 
     protected $casts = [
@@ -66,4 +68,13 @@ class Document extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function currency()
+    {
+        return $this->belongsTo(Security::class, 'currency_id');
+    }
+
+    public function getCurrencyNameAttribute(): ?string
+    {
+        return $this->currency?->name;
+    }
 }

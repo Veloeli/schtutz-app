@@ -16,7 +16,14 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Amount</label>
+            <label class="form-label">
+                Amount
+                @if($document->currency_id)
+                    <span class="text-muted">
+                        (in {{ $document->currency_name }})
+                    </span>
+                @endif
+            </label>
             <input type="number" step="0.000001" name="amount"
                    autocomplete="off"
                    class="form-control"

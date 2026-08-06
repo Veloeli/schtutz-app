@@ -7,6 +7,7 @@ use App\Services\DocumentService;
 use App\Services\CategoryService;
 use App\Models\User;
 use App\Models\Team;
+use App\Models\Security;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -56,9 +57,13 @@ class DocumentController extends Controller
             $defaultPostingDate = now()->format('Y-m-d');
         }
 
+        // 3. Available currencies for this user (active only)
+        $availableCurrencies = Security::availableCurrencies(auth()->user())->get();
+
         return view('documents.create', [
-            'posting_date'   => $defaultPostingDate,
-            'possibleOwners' => auth()->user()->possibleDocumentOwners(),
+            'posting_date'       => $defaultPostingDate,
+            'possibleOwners'     => auth()->user()->possibleDocumentOwners(),
+            'availableCurrencies'=> $availableCurrencies,   // NEW
         ]);
     }
 
@@ -68,6 +73,7 @@ class DocumentController extends Controller
             'title'            => 'required|string|max:255',
             'posting_date'     => 'required|date',
             'user_id'          => 'required|integer',
+            'currency_id'      => 'nullable|integer',
         ]);
 
         // Freeze-after check
@@ -81,8 +87,42 @@ class DocumentController extends Controller
         $validated['repeat_pattern']  = 0;
         $validated['repeat_constant'] = 0;
 
-        // Create the document
+        // Create the document (currency_id included)
         $document = $this->documents->create($validated);
+
+        // CASE 1: No currency selected → ensure rate = 1.0
+        if (empty($validated['currency_id'])) {
+            $document->currency_id  = null;
+            $document->currency_rate = 1.0;
+            $document->save();
+        }
+
+        // CASE 2: Currency selected → validate + compute FX rate
+        if (!empty($validated['currency_id'])) {
+
+            // Validate visibility: only currencies assigned to user or teams AND is_in_use=1
+            $allowed = Security::availableCurrencies($request->user())->pluck('id');
+
+            // Document may use a legacy currency → allow it
+            $isLegacy = Security::where('id', $validated['currency_id'])
+                                ->where('asset_class', 'FX')
+                                ->exists();
+
+            if (!$allowed->contains($validated['currency_id']) && !$isLegacy) {
+                return back()
+                    ->withErrors(['currency_id' => 'This currency is not available.'])
+                    ->withInput();
+            }
+
+            // Compute FX rate using your recursive model method
+            $currency = Security::find($validated['currency_id']);
+            $rate = $currency->quoteAt(\Carbon\Carbon::parse($validated['posting_date']));
+
+            // Persist rate
+            $document->currency_id  = $currency->id;
+            $document->currency_rate = $rate;
+            $document->save();
+        }
 
         // Store posting_date in session
         session(['document_posting_date' => $validated['posting_date']]);
@@ -90,7 +130,7 @@ class DocumentController extends Controller
         // Expand the newly created document in the UI
         session()->put("expanded_docs.{$document->id}", true);
 
-        // If a team teamfilter is active, reset it to "all" (else the new document would not be visible)
+        // If a team teamfilter is active, reset it to "all"
         $teamfilter = session('document_teamfilter', 'all');
         if (str_starts_with($teamfilter, 'team-')) {
             session(['document_teamfilter' => 'all']);
@@ -107,9 +147,12 @@ class DocumentController extends Controller
 
     public function edit(Document $document)
     {
+        $user = auth()->user();
+
         return view('documents.edit', [
-            'document'       => $document,
-            'possibleOwners' => auth()->user()->possibleDocumentOwners(),
+            'document'           => $document,
+            'possibleOwners'     => $user->possibleDocumentOwners(),
+            'availableCurrencies'=> Security::currenciesForDocument($document, $user),
         ]);
     }
 
@@ -117,7 +160,7 @@ class DocumentController extends Controller
     {
         $oldOwnerId = $document->user_id;
         $newOwnerId = $request->input('user_id');
-        
+
         // make sure we have a valid repeat_constant even if Blade delivers null
         if ($request->input('repeat_pattern') === "0") {
             $request->merge([
@@ -131,6 +174,7 @@ class DocumentController extends Controller
             'user_id'          => 'required|integer',
             'repeat_pattern'   => 'required|numeric|min:0|max:24',
             'repeat_constant'  => 'required|boolean',
+            'currency_id'      => 'nullable|integer',   // NEW
         ]);
 
         // Freeze-after check
@@ -144,13 +188,67 @@ class DocumentController extends Controller
             $validated['repeat_constant'] = 0;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | CURRENCY LOGIC
+        |--------------------------------------------------------------------------
+        */
+
+        $newCurrencyId = $validated['currency_id'] ?? null;
+        $oldCurrencyId = $document->currency_id;
+
+        // CASE 1: Currency removed
+        if ($newCurrencyId === null) {
+            $validated['currency_id']  = null;
+            $validated['currency_rate'] = 1.0;
+        }
+
+        // CASE 2: Currency changed or newly assigned
+        if ($newCurrencyId !== null && $newCurrencyId != $oldCurrencyId) {
+
+            // Validate visibility: only currencies assigned to user or teams AND is_in_use=1
+            $allowed = Security::availableCurrencies($request->user())->pluck('id');
+
+            // Document may use a legacy currency → allow it
+            $isLegacy = Security::where('id', $newCurrencyId)
+                                ->where('asset_class', 'FX')
+                                ->exists();
+
+            if (!$allowed->contains($newCurrencyId) && !$isLegacy) {
+                return back()
+                    ->withErrors(['currency_id' => 'This currency is not available.'])
+                    ->withInput();
+            }
+
+            // Compute FX rate using your recursive model method
+            $currency = Security::find($newCurrencyId);
+            $rate = $currency->quoteAt(\Carbon\Carbon::parse($validated['posting_date']));
+
+            $validated['currency_id']  = $newCurrencyId;
+            $validated['currency_rate'] = $rate;
+        }
+
+        // CASE 3: Currency unchanged → do nothing
+        // (We do NOT recompute rate — historical consistency)
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE DOCUMENT
+        |--------------------------------------------------------------------------
+        */
+
         $this->documents->update($document, $validated);
 
         // Set the month in session based on the document date
         $month = \Carbon\Carbon::parse($document->posting_date)->format('Y-m');
         session(['document_month' => $month]);
 
-        // If owner changed, clean up invalid items
+        /*
+        |--------------------------------------------------------------------------
+        | OWNER CHANGE → CLEAN UP INVALID ITEMS
+        |--------------------------------------------------------------------------
+        */
+
         if ($oldOwnerId != $newOwnerId) {
 
             $newOwner = User::find($newOwnerId);

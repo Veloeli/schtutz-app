@@ -32,6 +32,20 @@
             </div>
 
             <div class="col-md-6 mb-3">
+                <label class="form-label">Currency</label>
+                <select name="currency_id" class="form-select">
+                    <option value="">No currency</option>
+
+                    @foreach($availableCurrencies as $currency)
+                        <option value="{{ $currency->id }}"
+                            @selected($document->currency_id == $currency->id)>
+                            {{ $currency->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
                 <label class="form-label">Document Owner</label>
                 <select name="user_id" class="form-select">
                     @foreach($possibleOwners as $owner)

@@ -43,11 +43,15 @@ class DocumentItemController extends Controller
     public function store(Request $request, Document $document)
     {
         $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'amount' => 'nullable|numeric',
-            'quantity' => 'nullable|numeric',
+            'name'        => 'nullable|string|max:255',
+            'amount'      => 'nullable|numeric',
+            'quantity'    => 'nullable|numeric',
             'category_id' => 'required|exists:categories,id',
         ]);
+
+        if ($document->currency_id && $validated['amount'] !== null) {
+            $validated['amount'] = $validated['amount'] * $document->currency_rate;
+        }
 
         $document->items()->create($validated);
 
@@ -65,9 +69,13 @@ class DocumentItemController extends Controller
         // Load the item's current category so Blade can access it
         $item->load('category');
 
+        if ($document->currency_id && $item->amount !== null) {
+            $item->amount = $item->amount / $document->currency_rate;
+        }
+
         return view('documents.items.edit', [
-            'document' => $document,
-            'item' => $item,
+            'document'   => $document,
+            'item'       => $item,
             'categories' => $categories,
         ]);
     }
@@ -75,11 +83,15 @@ class DocumentItemController extends Controller
     public function update(Request $request, Document $document, Item $item)
     {
         $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'amount' => 'nullable|numeric',
-            'quantity' => 'nullable|numeric',
+            'name'        => 'nullable|string|max:255',
+            'amount'      => 'nullable|numeric',
+            'quantity'    => 'nullable|numeric',
             'category_id' => 'required|exists:categories,id',
         ]);
+
+        if ($document->currency_id && $validated['amount'] !== null) {
+            $validated['amount'] = $validated['amount'] * $document->currency_rate;
+        }
 
         $item->update($validated);
 
