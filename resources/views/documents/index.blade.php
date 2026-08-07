@@ -66,7 +66,13 @@
                             @endif
                             @if (!isZeroAmount($doc->amount_sum))
                                 <span class="badge bg-danger">
-                                    Balance: {{ formatAmount($doc->amount_sum) }}
+                                    Balance: 
+                                    @if($doc->currency)
+                                        {{ number_format($doc->amount_sum / $doc->currency_rate, 2)}}
+                                        {{ $doc->currency->name}}
+                                    @else
+                                        {{ number_format($doc->amount_sum, 2) }}
+                                    @endif
                                 </span>
                             @endif
                         </div>
@@ -130,19 +136,17 @@
 
                                                         <!-- MIDDLE COLUMN: amount -->
                                                         <div class="col-3 text-end">
-                                                            <div>
-                                                                @if($item->amount !== null)
-                                                                    <span class="fw-bold">
-                                                                        {{ number_format($item->amount, 2) }}
-                                                                    </span>
-                                                                @endif
-                                                            </div>
-                                                            <div class="text-muted small">
+                                                            @if($item->amount !== null)
+                                                                <span class="fw-bold">
+                                                                    {{ number_format($item->amount, 2) }}
+                                                                </span>
                                                                 @if($doc->currency)
-                                                                    {{ number_format($item->amount / $doc->currency_rate, 2)}}
-                                                                    {{ $doc->currency->name }}
+                                                                    <div class="text-muted small">
+                                                                        {{ number_format($item->amount / $doc->currency_rate, 2)}}
+                                                                        {{ $doc->currency->name }}
+                                                                    </div>
                                                                 @endif
-                                                            </div>
+                                                            @endif
                                                         </div>
 
                                                         <!-- RIGHT COLUMN: actions -->
