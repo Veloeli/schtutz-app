@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Services\VisibilityService;
 
 class CategoryPath extends Model
 {
@@ -27,19 +28,16 @@ class CategoryPath extends Model
         static::addGlobalScope('visibility', function ($query) {
             $user = auth()->user();
 
-            // No user (CLI, queue, tinker, etc.) → do nothing
             if (!$user) {
                 return;
             }
 
-            // Teams the user can see
-            $teams = $user->teamsWithFinancials();
-            $members = User::inRevealsTo($teams)->get();
+            $allowedUsers = \App\Services\VisibilityService::allowedUserIds($user);
+            $allowedTeams = \App\Services\VisibilityService::allowedTeamIds($user);
 
-            // Apply visibility rules
-            $query->where(function ($q) use ($teams, $members) {
-                $q->whereIn('category_paths_view.team_id', $teams->pluck('teams.id'))   // team-based visibility
-                  ->orWhereIn('category_paths_view.user_id', $members->pluck('id')); // personal/private categories
+            $query->where(function ($q) use ($allowedUsers, $allowedTeams) {
+                $q->whereIn('category_paths_view.user_id', $allowedUsers)
+                  ->orWhereIn('category_paths_view.team_id', $allowedTeams);
             });
         });
     }

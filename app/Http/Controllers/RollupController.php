@@ -90,8 +90,8 @@ class RollupController extends Controller
         //    - Wenn kein Team → nur der Owner selbst
         $possibleOwners = $root->team_id
             ? $root->users()->orderBy('name')->get()
-            : collect([$root->owner])->filter();
-            
+            : collect([$root->user])->filter();
+          
         // 3. Kategorien direkt auf diesem Rollup
         $assignedCategories = $rollup->categories()->get();
 

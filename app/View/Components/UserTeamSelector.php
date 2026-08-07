@@ -4,7 +4,7 @@ namespace App\View\Components;
 
 use App\Models\User;
 use Illuminate\View\Component;
-use Illuminate\Support\Facades\Log;
+use App\Services\VisibilityService;
 
 class UserTeamSelector extends Component
 {
@@ -12,14 +12,19 @@ class UserTeamSelector extends Component
     {
         $user = auth()->user();
 
-        $teams = $user->teamsWithFinancials()->get()->unique('id')->values(); // same user might have several memberships in the same team
+        // Use the SAME visibility rules as everywhere else
+        $allowedTeamIds = VisibilityService::allowedTeamIds($user);
+        $allowedUserIds = VisibilityService::allowedUserIds($user);
 
-        $members = User::whereIn('id', function ($q) use ($teams) {
-            $q->select('user_id')
-              ->from('team_user')
-              ->whereIn('team_id', $teams->pluck('id'))
-              ->distinct();
-        })->get();
+        // Teams the user can see
+        $teams = $user->teams()
+            ->whereIn('teams.id', $allowedTeamIds)
+            ->get()
+            ->unique('id')
+            ->values();
+
+        // Members the user can see (including themselves)
+        $members = User::whereIn('id', $allowedUserIds)->get();
 
         return view('components.user-team-selector', [
             'teams' => $teams,

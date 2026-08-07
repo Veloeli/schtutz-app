@@ -24,6 +24,12 @@ class BalanceController extends Controller
         $user = auth()->user();
 
         $selectedRoot = $user->resolveActiveRoot(request());
+        
+        if (!$selectedRoot) {
+            return back()->withErrors([
+                'root' => 'Oops. It looks like you have no rollup hierarchy defined. We need your categories assigned to a rollup hierarchy.'
+            ]);
+        }
 
         // Parse filter
         [$filterType, $rawValue] = $teamfilter && str_contains($teamfilter, '-')
