@@ -13,10 +13,14 @@ class CollectionController extends Controller
     public function index(Request $request)
     {
         // Store filter if provided
-        if ($request->filled('collection_id')) {
-            session(['collection_id' => $request->collection_id]);
-        }
+       if ($request->has('collection_id')) {
+            $id = $request->collection_id;
 
+            if ($id !== null && $id !== '') {
+                session(['collection_id' => $id]);
+            }
+        }
+        
         // Retrieve stored values (fallbacks if none stored)
         $selectedCollectionId = session('collection_id', null);
 
