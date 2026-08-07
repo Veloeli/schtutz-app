@@ -37,6 +37,26 @@ class DocumentController extends Controller
 
         $user = auth()->user();
 
+        // month dropdown ranges
+        $range = Document::query()
+            ->selectRaw('MIN(posting_date) as min_date, MAX(posting_date) as max_date')
+            ->first();
+
+        $min = \Carbon\Carbon::parse($range->min_date)->startOfMonth();
+        $max = \Carbon\Carbon::parse($range->max_date)->startOfMonth();
+
+        // Build valid month list
+        $validMonths = [];
+        for ($d = $min->copy(); $d <= $max; $d->addMonth()) {
+            $validMonths[] = $d->format('Y-m');
+        }
+
+        // Fallback if selected month no longer exists
+        if (!in_array($month, $validMonths)) {
+            $month = now()->format('Y-m');
+            session(['document_month' => $month]);   // keep UI + controller aligned
+        }
+
         // teamfilter documents using the service (which uses the policy)
         $documents = $this->documents->visibleFor($user, $month, $teamfilter);
 
@@ -44,6 +64,8 @@ class DocumentController extends Controller
             'documents' => $documents,
             'month' => $month,
             'teamfilter' => $teamfilter,
+            'minMonth' => $min,
+            'maxMonth' => $max,
         ]);
     }
 

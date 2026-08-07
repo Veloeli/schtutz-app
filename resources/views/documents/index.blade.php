@@ -17,7 +17,12 @@
 
 <form method="GET" action="{{ route('documents.index') }}" class="d-flex align-items-center gap-3 mb-3 flex-wrap">
     <!-- Month Selector -->
-    <x-month-selector name="month" :value="$month" />
+    <x-month-selector
+        name="month"
+        :value="$month"
+        :min-month="$minMonth"
+        :max-month="$maxMonth"
+    />
 
     <!-- User/Team Selector -->
     <x-user-team-selector
