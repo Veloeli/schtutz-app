@@ -130,11 +130,19 @@
 
                                                         <!-- MIDDLE COLUMN: amount -->
                                                         <div class="col-3 text-end">
-                                                            @if($item->amount !== null)
-                                                                <span class="fw-bold">
-                                                                    {{ number_format($item->amount, 2) }}
-                                                                </span>
-                                                            @endif
+                                                            <div>
+                                                                @if($item->amount !== null)
+                                                                    <span class="fw-bold">
+                                                                        {{ number_format($item->amount, 2) }}
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                            <div class="text-muted small">
+                                                                @if($doc->currency)
+                                                                    {{ number_format($item->amount / $doc->currency_rate, 2)}}
+                                                                    {{ $doc->currency->name }}
+                                                                @endif
+                                                            </div>
                                                         </div>
 
                                                         <!-- RIGHT COLUMN: actions -->
