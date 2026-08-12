@@ -11,34 +11,41 @@
     <h2 class="mb-4">Documents</h2>
 
     <div class="d-flex align-items-center gap-2">
-        <form action="{{ route('documents.reconcile') }}" method="POST">
-            @csrf
-            <button class="btn btn-secondary">
-                Reconcile
-            </button>
-        </form>
-
         <a href="{{ route('documents.create') }}" class="btn btn-primary">
             New Document
         </a>
     </div>
 </div>
 
-<form method="GET" action="{{ route('documents.index') }}" class="d-flex align-items-center gap-3 mb-3 flex-wrap">
-    <!-- Month Selector -->
-    <x-month-selector
-        name="month"
-        :value="$month"
-        :min-month="$minMonth"
-        :max-month="$maxMonth"
-    />
+<div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
 
-    <!-- User/Team Selector -->
-    <x-user-team-selector
-        :action="route('documents.index')"
-        :teamfilter="$teamfilter"
-    />
-</form>
+    <!-- GET form: Month + Team selectors -->
+    <form method="GET" action="{{ route('documents.index') }}" 
+          class="d-flex align-items-center gap-3 flex-wrap">
+
+        <x-month-selector
+            name="month"
+            :value="$month"
+            :min-month="$minMonth"
+            :max-month="$maxMonth"
+        />
+
+        <x-user-team-selector
+            :action="route('documents.index')"
+            :teamfilter="$teamfilter"
+        />
+    </form>
+
+    <!-- POST form: Reconcile button -->
+    <form action="{{ route('documents.reconcile') }}" method="POST">
+        @csrf
+        <button class="btn btn-secondary">
+            Reconcile
+        </button>
+    </form>
+
+</div>
+
 
 <!-- Documents Table -->
 @if($documents->isEmpty())
