@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('documents.items', DocumentItemController::class);
     Route::post('/documents/toggle', [DocumentController::class, 'toggle'])->name('documents.toggle');
     Route::get('/documents/{document}/suggest-category', [DocumentItemController::class, 'suggestCategory'])->name('documents.items.suggest-category');
+    Route::post('/documents/reconcile', [DocumentController::class, 'reconcile'])->name('documents.reconcile');
 
     // Categories
     Route::resource('categories', CategoryController::class);

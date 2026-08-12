@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Services\DocumentService;
 use App\Services\CategoryService;
+use App\Services\ReconciliationService;
 use App\Models\User;
 use App\Models\Team;
+use App\Models\TeamUser;
 use App\Models\Security;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -324,5 +327,84 @@ class DocumentController extends Controller
         $freezeDate = now()->subMonths($user->freeze_after);
 
         return \Carbon\Carbon::parse($postingDate)->lt($freezeDate);
+    }
+
+    public function reconcile(ReconciliationService $service)
+    {
+        $user  = auth()->user();
+        $teams = $user->teams;
+
+        $count = 0;
+
+        // ---------------------------------------------------------
+        // 1. Query sharing_view ONCE for ALL teams of this user
+        // ---------------------------------------------------------
+        $allRows = DB::table('sharing_view')
+            ->whereIn('team_id', $teams->pluck('id'))
+            ->orderBy('team_id')
+            ->orderBy('firstday')
+            ->orderBy('user_id')
+            ->orderBy('category_id')
+            ->get();
+
+        if ($allRows->isEmpty()) {
+            return redirect()->back()->with('success', "Nothing to reconcile.");
+        }
+
+        // ---------------------------------------------------------
+        // 2. Group rows by team
+        // ---------------------------------------------------------
+        $rowsByTeam = $allRows->groupBy('team_id');
+
+        foreach ($teams as $team) {
+
+            // ---------------------------------------------------------
+            // 3. Check clearing accounts for all team members
+            // ---------------------------------------------------------
+            foreach ($team->members as $member) {
+
+                $teamUser = TeamUser::where('team_id', $team->id)
+                    ->where('user_id', $member->id)
+                    ->first();
+
+                if (!$teamUser || !$teamUser->clearing_account) {
+                    return redirect()->route('documents.index')
+                        ->with('error', "Team {$team->name}: User {$member->name} has no clearing account configured.");
+                }
+            }
+
+            // ---------------------------------------------------------
+            // 4. Get all rows for this team (already preloaded)
+            // ---------------------------------------------------------
+            $teamRows = $rowsByTeam->get($team->id);
+
+            if (!$teamRows || $teamRows->isEmpty()) {
+                continue; // nothing to reconcile for this team
+            }
+
+            // ---------------------------------------------------------
+            // 5. Group rows by month (firstday)
+            // ---------------------------------------------------------
+            $months = $teamRows->groupBy('firstday');
+
+            // ---------------------------------------------------------
+            // 6. For each month: reconcile if there are gaps
+            // ---------------------------------------------------------
+            foreach ($months as $firstdayString => $rowsForMonth) {
+
+                // Check if month has gaps
+                $hasGaps = $rowsForMonth->contains(fn($r) => abs((float)$r->gap) >= 0.01);
+
+                if (!$hasGaps) {
+                    continue; // skip fully balanced months
+                }
+
+                // Run reconciliation (service deletes old wizard docs automatically)
+                $service->run($team, $firstdayString, $rowsForMonth);
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$count month(s) reconciled.");
     }
 }

@@ -12,6 +12,7 @@ class Item extends Model
     use HasFactory;
 
     protected $fillable = [
+        'document_id',
         'name',
         'amount',
         'quantity',

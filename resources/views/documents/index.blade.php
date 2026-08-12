@@ -10,9 +10,18 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-4">Documents</h2>
 
-    <a href="{{ route('documents.create') }}" class="btn btn-primary">
-        New Document
-    </a>
+    <div class="d-flex align-items-center gap-2">
+        <form action="{{ route('documents.reconcile') }}" method="POST">
+            @csrf
+            <button class="btn btn-secondary">
+                Reconcile
+            </button>
+        </form>
+
+        <a href="{{ route('documents.create') }}" class="btn btn-primary">
+            New Document
+        </a>
+    </div>
 </div>
 
 <form method="GET" action="{{ route('documents.index') }}" class="d-flex align-items-center gap-3 mb-3 flex-wrap">
@@ -30,7 +39,6 @@
         :teamfilter="$teamfilter"
     />
 </form>
-
 
 <!-- Documents Table -->
 @if($documents->isEmpty())

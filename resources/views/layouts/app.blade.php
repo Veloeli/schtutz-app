@@ -40,13 +40,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             @endif
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm alert-responsive mb-1">
+                    <span class="alert-line">{{ session('error') }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
 
-<!--            @if (session('success'))
+            @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show shadow-sm alert-responsive mb-1">
                     <span class="alert-line">{{ session('success') }}</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-            @endif-->
+            @endif
         </div>
     </header>
 

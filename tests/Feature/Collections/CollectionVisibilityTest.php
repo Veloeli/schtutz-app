@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Collection;
+namespace Tests\Feature\Collections;
 
 use App\Models\Collection;
 use App\Models\User;

@@ -18,7 +18,8 @@ class Document extends Model
         'repeat_constant', 
         'user_id',
         'currency_id',
-        'currency_rate'
+        'currency_rate',
+        'wizard',
     ];
 
     protected $casts = [
